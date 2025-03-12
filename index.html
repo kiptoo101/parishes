@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <link rel="stylesheet" href="css/leaflet.markercluster.css">
+        <link rel="stylesheet" href="css/leaflet.markercluster.default.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px;
+            background-color: #f5f5f5;
+            border-radius: 3px;
+            margin-bottom: 8px;
+        }
+        .panel-header h4 {
+            margin: 0;
+        }
+        .panel-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .panel-content.collapsed {
+            max-height: 0;
+        }
+        .toggle-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 5px;
+        }
+        #loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            z-index: 1001;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            min-width: 280px;
+        }
+        #loading-progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        #loading-progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        /* Enhanced cluster styling with green and yellow */
+        .marker-cluster {
+            background-clip: padding-box;
+            border-radius: 20px;
+        }
+        .marker-cluster div {
+            width: 36px;
+            height: 36px;
+            margin-left: 2px;
+            margin-top: 2px;
+            text-align: center;
+            border-radius: 18px;
+            font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .marker-cluster span {
+            color: white;
+            font-weight: bold;
+        }
+        .cluster-small div {
+            background-color: rgba(76, 175, 80, 0.8); /* Green */
+        }
+        .cluster-medium div {
+            background-color: rgba(124, 179, 66, 0.8); /* Light Green */
+        }
+        .cluster-large div {
+            background-color: rgba(255, 235, 59, 0.8); /* Yellow */
+        }
+        .marker-cluster-small {
+            background-color: rgba(76, 175, 80, 0.4); /* Green */
+        }
+        .marker-cluster-medium {
+            background-color: rgba(124, 179, 66, 0.4); /* Light Green */
+        }
+        .marker-cluster-large {
+            background-color: rgba(255, 235, 59, 0.4); /* Yellow */
+        }
+        </style>
+        <title>Catholic Churches Interactive Map</title>
+    </head>
+    <body>
+        <!-- Loading Indicator -->
+        <!--<div id="loading-indicator">-->
+            <!--<h3>Loading Church Data</h3>-->
+            <!--<div id="loading-progress-bar">-->
+                <!--<div id="loading-progress-fill"></div>-->
+            <!--</div>-->
+            <!--<div id="loading-status">0 of 5 chunks loaded (0%)</div>-->
+        <!--</div>-->
+        
+        <!-- Filter Panel -->
+        <div id="filter-panel" style="position: absolute; top: 10px; right: 10px; z-index: 1000; background: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); max-height: 80vh; overflow-y: auto; width: 250px;">
+          <div class="panel-header" onclick="togglePanel('filter-content')">
+            <h4>Filter Churches</h4>
+            <button class="toggle-btn" id="filter-toggle">−</button>
+          </div>
+          
+          <div id="filter-content" class="panel-content">
+            <div class="filter-section">
+              <label for="country-filter">Country:</label>
+              <select id="country-filter" style="width: 100%; margin-bottom: 10px;">
+                <option value="">All Countries</option>
+              </select>
+            </div>
+            
+            <div class="filter-section">
+              <label for="jurisdiction-filter">Jurisdiction:</label>
+              <select id="jurisdiction-filter" style="width: 100%; margin-bottom: 10px;">
+                <option value="">All Jurisdictions</option>
+              </select>
+            </div>
+            
+            <div class="filter-section">
+              <label for="type-filter">Type:</label>
+              <select id="type-filter" style="width: 100%; margin-bottom: 10px;">
+                <option value="">All Types</option>
+              </select>
+            </div>
+            
+            <div class="filter-section">
+              <label for="rite-filter">Rite:</label>
+              <select id="rite-filter" style="width: 100%; margin-bottom: 10px;">
+                <option value="">All Rites</option>
+              </select>
+            </div>
+            
+            <button id="reset-filters" style="width: 100%; padding: 5px; background: #f0f0f0; border: 1px solid #ccc; cursor: pointer;">Reset Filters</button>
+            
+            <div id="filter-info" style="margin-top: 10px; font-size: 12px;">
+              Loading churches...
+            </div>
+          </div>
+        </div>
+        
+        <!-- Legend -->
+        <div id="legend" style="position: absolute; bottom: 30px; right: 10px; z-index: 1000; background: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
+          <div class="panel-header" onclick="togglePanel('legend-content')">
+            <h4>Legend</h4>
+            <button class="toggle-btn" id="legend-toggle">−</button>
+          </div>
+          
+          <div id="legend-content" class="panel-content">
+            <div style="margin-bottom: 5px;">
+              <span style="display: inline-block; width: 15px; height: 15px; background-color: #FFD700; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); margin-right: 5px;"></span>
+              Basilica
+            </div>
+            
+            <div style="margin-bottom: 5px;">
+              <span style="display: inline-block; width: 15px; height: 15px; background-color: #800080; clip-path: polygon(50% 0%, 100% 100%, 0% 100%); margin-right: 5px;"></span>
+              Cathedral
+            </div>
+            
+            <div style="margin-bottom: 5px;">
+              <span style="display: inline-block; width: 15px; height: 15px; background-color: #0000FF; clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); margin-right: 5px;"></span>
+              Parish Church
+            </div>
+            
+            <div style="margin-bottom: 5px;">
+              <span style="display: inline-block; width: 15px; height: 15px; background-color: #404040; border-radius: 50%; margin-right: 5px;"></span>
+              Church
+            </div>
+            
+            <div style="margin-top: 10px; margin-bottom: 5px;">
+              <strong>Clusters:</strong>
+            </div>
+            
+            <div style="margin-bottom: 5px;">
+              <span style="display: inline-block; width: 15px; height: 15px; background-color: rgba(76, 175, 80, 0.8); border-radius: 50%; margin-right: 5px;"></span>
+              Small Clusters
+            </div>
+            
+            <div style="margin-bottom: 5px;">
+              <span style="display: inline-block; width: 15px; height: 15px; background-color: rgba(255, 235, 59, 0.8); border-radius: 50%; margin-right: 5px;"></span>
+              Large Clusters
+            </div>
+          </div>
+        </div>
+        
+        <div id="map">
+        </div>
+        
+        <!-- Base Libraries -->
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet-svg-shape-markers.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/leaflet.markercluster.js"></script>
+        
+        <!-- Data Chunk Loading System -->
+        <script>
+            // Configuration for chunk loading
+            const totalChunks = 5;
+            let loadedChunks = 0;
+            
+            // Track loading progress
+            function updateLoadingProgress() {
+                loadedChunks++;
+                const percentage = Math.round((loadedChunks / totalChunks) * 100);
+                
+                // Update progress bar
+                document.getElementById('loading-progress-fill').style.width = percentage + '%';
+                document.getElementById('loading-status').textContent = 
+                    `${loadedChunks} of ${totalChunks} chunks loaded (${percentage}%)`;
+                
+                // When all chunks are loaded, hide the loading indicator after a short delay
+                if (loadedChunks >= totalChunks) {
+                    setTimeout(function() {
+                        document.getElementById('loading-indicator').style.display = 'none';
+                    }, 500);
+                }
+            }
+            
+            // Create script loading helper
+            function loadScript(url, callback) {
+                const script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = url;
+                
+                // When script is loaded, call the callback
+                script.onload = callback;
+                
+                // If there's an error, still update the counter but log the error
+                script.onerror = function() {
+                    console.error('Failed to load script:', url);
+                    callback();
+                };
+                
+                // Add the script to the document to start loading
+                document.head.appendChild(script);
+            }
+            
+            // Sequential script loading to ensure proper order
+            function loadDataChunks() {
+                // Load each chunk one by one
+                function loadNextChunk(index) {
+                    if (index > totalChunks) {
+                        return; // All chunks loaded
+                    }
+                    
+                    if (index <= 5) { // Regular data chunks
+                        loadScript(`split_data/json_complete_parish_data_1_part${index}.js`, function() {
+                            updateLoadingProgress();
+                            loadNextChunk(index + 1);
+                        });
+                    } else { // Load the loader script last
+                        loadScript('split_data/json_loader.js', function() {
+                            // The loader will call initializeMap() automatically
+                        });
+                    }
+                }
+                
+                // Start loading the first chunk
+                loadNextChunk(1);
+            }
+            
+            // Start loading data chunks when the page loads
+            window.addEventListener('load', loadDataChunks);
+        </script>
+
+        <!-- Core map functionality -->
+        <script>
+        // Panel toggle functionality
+        function togglePanel(contentId) {
+            var content = document.getElementById(contentId);
+            var toggleBtn = document.getElementById(contentId.split('-')[0] + '-toggle');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                toggleBtn.textContent = '−';
+            } else {
+                content.classList.add('collapsed');
+                toggleBtn.textContent = '+';
+            }
+        }
+        
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#e31a1c',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#e31a1c',
+                fillOpacity: 1
+              });
+            }
+            highlightLayer.openPopup();
+        }
+        
+        // Initialize map with global extent
+        var map = L.map('map', {
+            zoomControl: false,
+            maxZoom: 28,
+            minZoom: 2,
+            worldCopyJump: true
+        });
+        
+        // Set map bounds to world extent
+        var worldBounds = [[-90, -180], [90, 180]];
+        map.fitBounds(worldBounds);
+        
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        
+        // Helper function to remove empty rows from popup content
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        
+        // Helper function to format popup if it contains media
+        function addClassToPopupIfMedia(content, popup) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            if (tempDiv.querySelector('td img')) {
+                popup._contentNode.classList.add('media');
+                // Delay to force the redraw
+                setTimeout(function() {
+                    popup.update();
+                }, 10);
+            } else {
+                popup._contentNode.classList.remove('media');
+            }
+        }
+        
+        // Add zoom control
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        
+        // Add locate control
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        
+        // Add base map layer
+        map.createPane('pane_OpenStreetMap_0');
+        map.getPane('pane_OpenStreetMap_0').style.zIndex = 400;
+        var layer_OpenStreetMap_0 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OpenStreetMap_0',
+            opacity: 1.0,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        map.addLayer(layer_OpenStreetMap_0);
+        
+        // Function to create popups for church points
+        function pop_complete_parish_data_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>' + (feature.properties['Title'] !== null ? autolinker.link(feature.properties['Title'].toLocaleString()) : '') + '</strong></td>\
+                    </tr>\
+                    <tr>\
+                        <td>Jurisdiction:</td>\
+                        <td>' + (feature.properties['Jurisdiction'] !== null ? autolinker.link(feature.properties['Jurisdiction'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td>Type:</td>\
+                        <td>' + (feature.properties['Type'] !== null ? autolinker.link(feature.properties['Type'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td>Rite:</td>\
+                        <td>' + (feature.properties['Rite'] !== null ? autolinker.link(feature.properties['Rite'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td>Address:</td>\
+                        <td>' + (feature.properties['Address'] !== null ? autolinker.link(feature.properties['Address'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td>Country:</td>\
+                        <td>' + (feature.properties['Country'] !== null ? autolinker.link(feature.properties['Country'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+            layer.on('popupopen', function(e) {
+                addClassToPopupIfMedia(content, e.popup);
+            });
+            layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        // Styling function for church points
+        function style_complete_parish_data_1_0(feature) {
+            // Style based on type
+            var markerStyle = {
+                pane: 'pane_complete_parish_data_1',
+                shape: 'circle',
+                radius: 6,
+                opacity: 1,
+                color: '#000000',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: '#404040',
+                interactive: true
+            };
+            
+            var type = feature.properties.Type || '';
+            var rite = feature.properties.Rite || '';
+            
+            // Style based on type
+            if (type.includes('Basilica')) {
+                markerStyle.shape = 'diamond';
+                markerStyle.radius = 8;
+                markerStyle.fillColor = '#FFD700'; // Gold for Basilicas
+            } else if (type.includes('Cathedral')) {
+                markerStyle.shape = 'triangle';
+                markerStyle.radius = 8;
+                markerStyle.fillColor = '#800080'; // Purple for Cathedrals
+            } else if (type.includes('Parish')) {
+                markerStyle.shape = 'square';
+                markerStyle.radius = 7;
+                markerStyle.fillColor = '#0000FF'; // Blue for Parish Churches
+            }
+            
+            // Adjust color based on rite
+            if (rite === 'Roman (Latin)') {
+                markerStyle.color = '#800020'; // Burgundy outline for Roman/Latin
+            } else if (rite === 'Ukrainian (Byzantine)') {
+                markerStyle.color = '#000080'; // Navy outline for Ukrainian/Byzantine
+            } else if (rite === 'Syro-Malabar') {
+                markerStyle.color = '#006400'; // Green outline for Syro-Malabar
+            }
+            
+            return markerStyle;
+        }
+        
+        // Create pane for church layer
+        map.createPane('pane_complete_parish_data_1');
+        map.getPane('pane_complete_parish_data_1').style.zIndex = 401;
+        map.getPane('pane_complete_parish_data_1').style['mix-blend-mode'] = 'normal';
+        
+        // Initialize markers cluster group with enhanced clustering
+        var markers = L.markerClusterGroup({
+            showCoverageOnHover: false,
+            spiderfyDistanceMultiplier: 2,
+            // Always cluster until there's only one point
+            disableClusteringAtZoom: null, // Set to null to always cluster
+            maxClusterRadius: 80, // Increased for more aggressive clustering
+            spiderfyOnMaxZoom: true,
+            chunkedLoading: true,
+            zoomToBoundsOnClick: true, // Ensure clicking on a cluster zooms to its bounds
+            chunkProgress: function(processed, total, elapsed) {
+                if (processed === total) {
+                    console.log('Cluster rendering completed in ' + elapsed + 'ms');
+                }
+            },
+            // Custom cluster icon styling with green and yellow colors
+            iconCreateFunction: function(cluster) {
+                const count = cluster.getChildCount();
+                let size, className;
+                
+                if (count < 50) {
+                    size = 'small';
+                    className = 'cluster-small';
+                } else if (count < 500) {
+                    size = 'medium';
+                    className = 'cluster-medium';
+                } else {
+                    size = 'large';
+                    className = 'cluster-large';
+                }
+                
+                return L.divIcon({ 
+                    html: '<div><span>' + count + '</span></div>', 
+                    className: 'marker-cluster marker-cluster-' + size + ' ' + className,
+                    iconSize: new L.Point(40, 40)
+                });
+            },
+            animate: true,
+            animateAddingMarkers: true
+        });
+        
+        // Add search control
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        
+        // Add layer control
+        var overlaysTree = [
+            {label: '<img src="legend/complete_parish_data_1.png" /> Churches', layer: markers},
+            {label: "OpenStreetMap", layer: layer_OpenStreetMap_0},
+        ];
+        
+        var lay = L.control.layers.tree(null, overlaysTree, {
+            collapsed: true,
+        });
+        lay.addTo(map);
+        
+        // Modified function to initialize the map after data is loaded
+        function initializeMap() {
+            console.log("Initializing map with combined data");
+            
+            // Make sure map fills viewport with world view
+            function ensureMapFillsViewport() {
+                var worldBounds = [[-90, -180], [90, 180]];
+                map.setMinZoom(map.getBoundsZoom(worldBounds, true));
+                map.setMaxBounds([[-90, -360], [90, 360]]);  // Set max bounds with padding for world copy
+            }
+            
+            // Call this on load and resize
+            ensureMapFillsViewport();
+            window.addEventListener('resize', ensureMapFillsViewport);
+            
+            // Populate filter dropdowns
+            var countries = new Set();
+            var jurisdictions = new Set();
+            var types = new Set();
+            var rites = new Set();
+            
+            // Extract simplified types and unique values for filters
+            json_complete_parish_data_1.features.forEach(function(feature) {
+                var props = feature.properties;
+                
+                if (props.Country) countries.add(props.Country);
+                if (props.Jurisdiction) jurisdictions.add(props.Jurisdiction);
+                if (props.Rite) rites.add(props.Rite);
+                
+                // Extract main category for Type filter
+                if (props.Type) {
+                    var type = props.Type;
+                    if (type.includes('Basilica')) types.add('Basilica');
+                    else if (type.includes('Cathedral')) types.add('Cathedral');
+                    else if (type.includes('Parish')) types.add('Parish Church');
+                    else if (type.includes('Church')) types.add('Church');
+                    else types.add(type);
+                }
+            });
+            
+            // Helper function to populate dropdowns
+            function populateDropdown(elementId, values) {
+                var dropdown = document.getElementById(elementId);
+                dropdown.innerHTML = '<option value="">All</option>'; // Clear existing options
+                var sortedValues = Array.from(values).sort();
+                
+                sortedValues.forEach(function(value) {
+                    var option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = value;
+                    dropdown.appendChild(option);
+                });
+            }
+            
+            // Populate filter dropdowns
+            populateDropdown('country-filter', countries);
+            populateDropdown('jurisdiction-filter', jurisdictions);
+            populateDropdown('type-filter', types);
+            populateDropdown('rite-filter', rites);
+            
+            // Filter and update visible markers
+            function updateVisibleMarkers() {
+                // Show loading indicator
+                document.getElementById('filter-info').textContent = 'Filtering churches...';
+                
+                // Use setTimeout to allow UI to update before heavy processing
+                setTimeout(function() {
+                    // Clear existing layers
+                    markers.clearLayers();
+                    
+                    // Get filter values
+                    var selectedCountry = document.getElementById('country-filter').value;
+                    var selectedJurisdiction = document.getElementById('jurisdiction-filter').value;
+                    var selectedType = document.getElementById('type-filter').value;
+                    var selectedRite = document.getElementById('rite-filter').value;
+                    
+                    // Get current map bounds
+                    var bounds = map.getBounds();
+                    var southWest = bounds.getSouthWest();
+                    var northEast = bounds.getNorthEast();
+                    
+                    // Initialize counters
+                    var visible = 0;
+                    var filtered = 0;
+                    var total = json_complete_parish_data_1.features.length;
+                    var maxVisible = 5000; // Limit for performance
+                    
+                    // Create a temporary GeoJSON object for batch processing
+                    var tempGeoJson = {
+                        "type": "FeatureCollection",
+                        "features": []
+                    };
+                    
+                    // Filter features
+                    for (var i = 0; i < total && visible < maxVisible; i++) {
+                        var feature = json_complete_parish_data_1.features[i];
+                        var props = feature.properties;
+                        var type = props.Type || '';
+                        
+                        // Apply filters
+                        var countryMatch = !selectedCountry || props.Country === selectedCountry;
+                        var jurisdictionMatch = !selectedJurisdiction || props.Jurisdiction === selectedJurisdiction;
+                        var typeMatch = !selectedType || (
+                            (selectedType === 'Basilica' && type.includes('Basilica')) ||
+                            (selectedType === 'Cathedral' && type.includes('Cathedral')) ||
+                            (selectedType === 'Parish Church' && type.includes('Parish')) ||
+                            (selectedType === 'Church' && type.includes('Church') && !type.includes('Parish') && !type.includes('Cathedral') && !type.includes('Basilica'))
+                        );
+                        var riteMatch = !selectedRite || props.Rite === selectedRite;
+                        
+                        // If all filters match
+                        if (countryMatch && jurisdictionMatch && typeMatch && riteMatch) {
+                            filtered++;
+                            
+                            // Check if in current view bounds
+                            var coords = feature.geometry.coordinates;
+                            var lat = coords[1];
+                            var lng = coords[0];
+                            
+                            // Normalize longitude to handle world wrap
+                            while (lng < southWest.lng) lng += 360;
+                            while (lng > northEast.lng) lng -= 360;
+                            
+                            // Only add if in current view (with some buffer)
+                            // Increased buffer for smoother panning and zooming
+                            if (lat >= southWest.lat - 2 && lat <= northEast.lat + 2 &&
+                                lng >= southWest.lng - 2 && lng <= northEast.lng + 2) {
+                                // Use a lighter clone for better performance
+                                var featureClone = {
+                                    type: "Feature",
+                                    properties: feature.properties,
+                                    geometry: {
+                                        type: "Point",
+                                        coordinates: [lng, lat]
+                                    }
+                                };
+                                tempGeoJson.features.push(featureClone);
+                                visible++;
+                            }
+                        }
+                    }
+                    
+                    // Add markers in batch for better performance
+                    if (tempGeoJson.features.length > 0) {
+                        var tempLayer = L.geoJson(tempGeoJson, {
+                            onEachFeature: pop_complete_parish_data_1,
+                            pointToLayer: function(feature, latlng) {
+                                return L.shapeMarker(latlng, style_complete_parish_data_1_0(feature));
+                            }
+                        });
+                        
+                        markers.addLayer(tempLayer);
+                        map.addLayer(markers);
+                    }
+                    
+                    // Update info text
+                    document.getElementById('filter-info').textContent = 
+                        'Showing ' + visible + ' of ' + filtered + ' filtered churches ' +
+                        '(' + total + ' total)';
+                    
+                }, 50); // Small delay to let the UI update
+            }
+            
+            // Add event listeners to filters
+            document.getElementById('country-filter').addEventListener('change', updateVisibleMarkers);
+            document.getElementById('jurisdiction-filter').addEventListener('change', updateVisibleMarkers);
+            document.getElementById('type-filter').addEventListener('change', updateVisibleMarkers);
+            document.getElementById('rite-filter').addEventListener('change', updateVisibleMarkers);
+            
+            // Reset filters button
+            document.getElementById('reset-filters').addEventListener('click', function() {
+                document.getElementById('country-filter').value = '';
+                document.getElementById('jurisdiction-filter').value = '';
+                document.getElementById('type-filter').value = '';
+                document.getElementById('rite-filter').value = '';
+                updateVisibleMarkers();
+            });
+            
+            // Update markers when map moves
+            map.on('moveend', updateVisibleMarkers);
+            
+            // Enable better clustering performance with a debounce
+            let moveEndTimer;
+            map.on('movestart', function() {
+                clearTimeout(moveEndTimer);
+            });
+            
+            map.on('moveend', function() {
+                clearTimeout(moveEndTimer);
+                moveEndTimer = setTimeout(function() {
+                    updateVisibleMarkers();
+                }, 300);
+            });
+            
+            // Initial update
+            updateVisibleMarkers();
+        }
+        </script>
+        
+        <!-- Include chunked data files -->
+        <script src="data/json_complete_parish_data_1_part1.js"></script>
+        <script src="data/json_complete_parish_data_1_part2.js"></script>
+        <script src="data/json_complete_parish_data_1_part3.js"></script>
+        <script src="data/json_complete_parish_data_1_part4.js"></script>
+        <script src="data/json_complete_parish_data_1_part5.js"></script>
+        <script src="data/json_loader.js"></script>
+    </body>
+</html>
