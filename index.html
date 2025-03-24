@@ -14,309 +14,13 @@
         <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
         <link rel="stylesheet" href="css/leaflet.markercluster.css">
         <link rel="stylesheet" href="css/leaflet.markercluster.default.css">
-        <style>
-        html, body, #map {
-            width: 100%;
-            height: 100%;
-            padding: 0;
-            margin: 0;
-        }
-        
-        /* Dark blue map styling - Custom background */
-        .leaflet-container {
-            background-color: #001f3f; /* Dark blue background */
-        }
-        
-        /* Panel styling with blue color scheme */
-        .panel {
-            position: absolute;
-            z-index: 1000;
-            background: #f0f8ff; /* Light blue background */
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            border: 1px solid #bbd6ff;
-        }
-        
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            padding: 5px;
-            background-color: #cce0ff; /* Slightly darker blue for header */
-            border-radius: 3px;
-            margin-bottom: 8px;
-        }
-        
-        .panel-header h4 {
-            margin: 0;
-            color: #003366; /* Dark blue text */
-        }
-        
-        .panel-content {
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        
-        .panel-content.collapsed {
-            max-height: 0;
-        }
-        
-        .toggle-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0 5px;
-            color: #003366; /* Dark blue */
-        }
-        
-        #filter-panel {
-            top: 10px;
-            right: 10px;
-            max-height: 80vh;
-            overflow-y: auto;
-            width: 250px;
-        }
-        
-        #legend {
-            bottom: 30px;
-            right: 10px;
-        }
-        
-        #church-list-panel {
-            top: 10px;
-            right: 270px;
-            width: 300px;
-            max-height: 80vh;
-            overflow-y: auto;
-            display: none; /* Initially hidden on mobile */
-        }
-        
-        @media (min-width: 768px) {
-            #church-list-panel {
-                display: block;
-            }
-        }
-        
-        #church-list {
-            max-height: calc(80vh - 50px);
-            overflow-y: auto;
-        }
-        
-        /* Search input styling */
-        .search-container {
-            position: relative;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #80b3ff; /* Blue border */
-            border-radius: 4px;
-            box-sizing: border-box;
-            margin-bottom: 5px;
-            background-color: #fcfdff;
-        }
-        
-        .filter-section {
-            margin-bottom: 15px;
-        }
-        
-        /* Loading indicator */
-        #loading-indicator {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(240, 248, 255, 0.9); /* Light blue background */
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            z-index: 1001;
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);
-            min-width: 280px;
-            border: 1px solid #80b3ff;
-        }
-        
-        #loading-progress-bar {
-            width: 100%;
-            height: 20px;
-            background-color: #e6effd; /* Very light blue */
-            border-radius: 10px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-        
-        #loading-progress-fill {
-            height: 100%;
-            background-color: #4682B4; /* Steel blue */
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.3s;
-        }
-        
-        /* Church list item */
-        .church-item {
-            padding: 8px;
-            border-bottom: 1px solid #cce0ff; /* Light blue border */
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .church-item:hover {
-            background-color: #e6f0ff; /* Light blue hover */
-        }
-        
-        .church-title {
-            font-weight: bold;
-            margin-bottom: 3px;
-            color: #003366; /* Dark blue */
-        }
-        
-        .church-details {
-            font-size: 12px;
-            color: #4682B4; /* Steel blue */
-        }
-        
-        /* Enhanced cluster styling */
-        .marker-cluster {
-            background-clip: padding-box;
-            border-radius: 20px;
-        }
-        
-        .marker-cluster div {
-            width: 36px;
-            height: 36px;
-            margin-left: 2px;
-            margin-top: 2px;
-            text-align: center;
-            border-radius: 18px;
-            font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .marker-cluster span {
-            color: white;
-            font-weight: bold;
-        }
-        
-        /* Update cluster colors to match map theme */
-        .cluster-small div {
-            background-color: rgba(102, 153, 255, 0.8); /* Light blue */
-        }
-        
-        .cluster-medium div {
-            background-color: rgba(51, 102, 204, 0.8); /* Medium Blue */
-        }
-        
-        .cluster-large div {
-            background-color: rgba(0, 51, 153, 0.8); /* Dark Blue */
-        }
-        
-        .marker-cluster-small {
-            background-color: rgba(102, 153, 255, 0.4); /* Light blue */
-        }
-        
-        .marker-cluster-medium {
-            background-color: rgba(51, 102, 204, 0.4); /* Medium Blue */
-        }
-        
-        .marker-cluster-large {
-            background-color: rgba(0, 51, 153, 0.4); /* Dark Blue */
-        }
-        
-        /* Enhanced legend */
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .legend-icon {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-        }
-        
-        .legend-text {
-            flex: 1;
-            color: #003366; /* Dark blue */
-        }
-        
-        /* Updated legend icons to match image */
-        #basilica-icon {
-            background-color: #FFD700; /* Gold for special churches */
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); /* Star shape */
-        }
-        
-        #cathedral-icon {
-            background-color: #FF4500; /* Red-orange for main churches */
-            border-radius: 50%;
-        }
-        
-        #parish-icon {
-            background-color: #87CEEB; /* Light blue for regular churches */
-            border-radius: 50%;
-        }
-        
-        #cross-icon {
-            position: relative;
-            background-color: transparent;
-        }
-        
-        #cross-icon:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 40%;
-            width: 20%;
-            height: 100%;
-            background-color: #FFD700; /* Gold */
-        }
-        
-        #cross-icon:after {
-            content: '';
-            position: absolute;
-            top: 40%;
-            left: 0;
-            width: 100%;
-            height: 20%;
-            background-color: #FFD700; /* Gold */
-        }
-        
-        /* Dropdown suggestion */
-        .dropdown-list {
-            position: absolute;
-            width: 100%;
-            max-height: 150px;
-            overflow-y: auto;
-            background: white;
-            border: 1px solid #80b3ff; /* Blue border */
-            border-radius: 0 0 4px 4px;
-            z-index: 1001;
-            display: none;
-        }
-        
-        .dropdown-item {
-            padding: 8px 10px;
-            cursor: pointer;
-        }
-        
-        .dropdown-item:hover {
-            background-color: #e6f0ff; /* Light blue hover */
-        }
-        </style>
+        <!-- CSS will be in separate part -->
         <title>Catholic Churches Interactive Map</title>
     </head>
     <body>
+        <!-- Filter Active Indicator -->
+        <div id="filter-active-indicator">Filters Active</div>
+        
         <!-- Filter Panel -->
         <div id="filter-panel" class="panel">
           <div class="panel-header" onclick="togglePanel('filter-content')">
@@ -381,6 +85,8 @@
             
             <button id="reset-filters" style="width: 100%; padding: 8px; background: #4682B4; color: white; border: 1px solid #3366cc; cursor: pointer; border-radius: 4px;">Reset Filters</button>
             
+            <button id="zoom-to-filter">Zoom to Filtered Results</button>
+            
             <div id="filter-info" style="margin-top: 10px; font-size: 12px; color: #003366;">
               Loading churches...
             </div>
@@ -436,7 +142,340 @@
         
         <div id="map">
         </div>
-        <!-- Base Libraries -->
+        
+        <!-- JavaScript components will be in separate parts -->
+        <style>
+            html, body, #map {
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                margin: 0;
+            }
+            
+            /* Dark blue map styling - Simple and clean */
+            .leaflet-container {
+                background-color: #054a94; /* Dark blue background */
+            }
+            
+            /* Panel styling with blue color scheme */
+            .panel {
+                position: absolute;
+                z-index: 1000;
+                background: #f0f8ff; /* Light blue background */
+                padding: 10px;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.2);
+                transition: all 0.3s ease;
+                border: 1px solid #bbd6ff;
+            }
+            
+            .panel-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+                padding: 5px;
+                background-color: #cce0ff; /* Slightly darker blue for header */
+                border-radius: 3px;
+                margin-bottom: 8px;
+            }
+            
+            .panel-header h4 {
+                margin: 0;
+                color: #003366; /* Dark blue text */
+            }
+            
+            .panel-content {
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+            
+            .panel-content.collapsed {
+                max-height: 0;
+            }
+            
+            .toggle-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 16px;
+                padding: 0 5px;
+                color: #003366; /* Dark blue */
+            }
+            
+            #filter-panel {
+                top: 10px;
+                right: 10px;
+                max-height: 80vh;
+                overflow-y: auto;
+                width: 250px;
+            }
+            
+            #legend {
+                bottom: 30px;
+                right: 10px;
+            }
+            
+            #church-list-panel {
+                top: 10px;
+                right: 270px;
+                width: 300px;
+                max-height: 80vh;
+                overflow-y: auto;
+                display: none; /* Initially hidden on mobile */
+            }
+            
+            @media (min-width: 768px) {
+                #church-list-panel {
+                    display: block;
+                }
+            }
+            
+            #church-list {
+                max-height: calc(80vh - 50px);
+                overflow-y: auto;
+            }
+            
+            /* Search input styling */
+            .search-container {
+                position: relative;
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            
+            .search-input {
+                width: 100%;
+                padding: 8px 10px;
+                border: 1px solid #80b3ff; /* Blue border */
+                border-radius: 4px;
+                box-sizing: border-box;
+                margin-bottom: 5px;
+                background-color: #fcfdff;
+            }
+            
+            .filter-section {
+                margin-bottom: 15px;
+            }
+            
+            /* Loading indicator */
+            #loading-indicator {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(240, 248, 255, 0.9); /* Light blue background */
+                padding: 20px;
+                border-radius: 8px;
+                text-align: center;
+                z-index: 1001;
+                box-shadow: 0 0 15px rgba(0,0,0,0.3);
+                min-width: 280px;
+                border: 1px solid #80b3ff;
+            }
+            
+            #loading-progress-bar {
+                width: 100%;
+                height: 20px;
+                background-color: #e6effd; /* Very light blue */
+                border-radius: 10px;
+                margin: 10px 0;
+                overflow: hidden;
+            }
+            
+            #loading-progress-fill {
+                height: 100%;
+                background-color: #4682B4; /* Steel blue */
+                border-radius: 10px;
+                width: 0%;
+                transition: width 0.3s;
+            }
+            
+            /* Church list item */
+            .church-item {
+                padding: 8px;
+                border-bottom: 1px solid #cce0ff; /* Light blue border */
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            
+            .church-item:hover {
+                background-color: #e6f0ff; /* Light blue hover */
+            }
+            
+            .church-title {
+                font-weight: bold;
+                margin-bottom: 3px;
+                color: #003366; /* Dark blue */
+            }
+            
+            .church-details {
+                font-size: 12px;
+                color: #4682B4; /* Steel blue */
+            }
+            
+            /* Enhanced cluster styling */
+            .marker-cluster {
+                background-clip: padding-box;
+                border-radius: 20px;
+            }
+            
+            .marker-cluster div {
+                width: 36px;
+                height: 36px;
+                margin-left: 2px;
+                margin-top: 2px;
+                text-align: center;
+                border-radius: 18px;
+                font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .marker-cluster span {
+                color: white;
+                font-weight: bold;
+            }
+            
+            /* Enhanced cluster colors with better visibility */
+            .cluster-small div {
+                background-color: rgba(115, 170, 255, 0.9); /* Brighter blue */
+            }
+            
+            .cluster-medium div {
+                background-color: rgba(64, 127, 219, 0.9); /* Medium Blue */
+            }
+            
+            .cluster-large div {
+                background-color: rgba(28, 82, 168, 0.9); /* Dark Blue */
+            }
+            
+            .marker-cluster-small {
+                background-color: rgba(115, 170, 255, 0.5); /* Brighter blue */
+            }
+            
+            .marker-cluster-medium {
+                background-color: rgba(64, 127, 219, 0.5); /* Medium Blue */
+            }
+            
+            .marker-cluster-large {
+                background-color: rgba(28, 82, 168, 0.5); /* Dark Blue */
+            }
+            
+            /* Enhanced legend */
+            .legend-item {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            
+            .legend-icon {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                margin-right: 10px;
+            }
+            
+            .legend-text {
+                flex: 1;
+                color: #003366; /* Dark blue */
+            }
+            
+            /* Updated legend icons with brighter colors */
+            #basilica-icon {
+                background-color: #FFD700; /* Gold for special churches */
+                clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); /* Star shape */
+            }
+            
+            #cathedral-icon {
+                background-color: #FF4500; /* Red-orange for main churches */
+                border-radius: 50%;
+            }
+            
+            #parish-icon {
+                background-color: #87CEEB; /* Light blue for regular churches */
+                border-radius: 50%;
+            }
+            
+            #cross-icon {
+                position: relative;
+                background-color: transparent;
+            }
+            
+            #cross-icon:before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 40%;
+                width: 20%;
+                height: 100%;
+                background-color: #FFD700; /* Gold */
+            }
+            
+            #cross-icon:after {
+                content: '';
+                position: absolute;
+                top: 40%;
+                left: 0;
+                width: 100%;
+                height: 20%;
+                background-color: #FFD700; /* Gold */
+            }
+            
+            /* Dropdown suggestion */
+            .dropdown-list {
+                position: absolute;
+                width: 100%;
+                max-height: 150px;
+                overflow-y: auto;
+                background: white;
+                border: 1px solid #80b3ff; /* Blue border */
+                border-radius: 0 0 4px 4px;
+                z-index: 1001;
+                display: none;
+            }
+            
+            .dropdown-item {
+                padding: 8px 10px;
+                cursor: pointer;
+            }
+            
+            .dropdown-item:hover {
+                background-color: #e6f0ff; /* Light blue hover */
+            }
+            
+            /* Filter status indicator */
+            #filter-active-indicator {
+                display: none;
+                position: absolute;
+                top: 10px;
+                left: 60px;
+                background: rgba(0, 51, 102, 0.8);
+                color: white;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                z-index: 1000;
+            }
+            
+            /* Added zoom-to-filter button */
+            #zoom-to-filter {
+                margin-top: 10px;
+                width: 100%;
+                padding: 8px;
+                background: #003366;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                display: none;
+            }
+            
+            #zoom-to-filter:hover {
+                background: #002244;
+            }
+            </style>
+            <!-- Base Libraries -->
 <script src="js/qgis2web_expressions.js"></script>
 <script src="js/leaflet.js"></script>
 <script src="js/L.Control.Layers.Tree.min.js"></script>
@@ -522,17 +561,21 @@
     // Start loading data chunks when the page loads
     window.addEventListener('load', loadDataChunks);
 </script>
+
 <!-- Core map functionality -->
 <script>
     // Variables to store filter data
     let allChurches = [];
     let filteredChurches = [];
+    let visibleChurches = [];
     let uniqueCountries = new Set();
     let uniqueJurisdictions = new Set();
     let uniqueTypes = new Set();
     let uniqueRites = new Set();
     let uniqueTitles = new Set();
     let uniqueCities = new Set();
+    let isFilterActive = false;
+    let hasAppliedFilters = false;
 
     // Panel toggle functionality
     function togglePanel(contentId) {
@@ -570,7 +613,9 @@
         zoomControl: false,
         maxZoom: 28,
         minZoom: 2,
-        worldCopyJump: true
+        worldCopyJump: true,
+        zoomAnimation: true,
+        fadeAnimation: true
     });
     
     // Set map bounds to world extent
@@ -623,19 +668,38 @@
     // Add Mapbox blue themed base map layer
     map.createPane('pane_MapboxBlue_0');
     map.getPane('pane_MapboxBlue_0').style.zIndex = 400;
+
+    // Set the background color - Keep it simple
+    document.querySelector('.leaflet-container').style.backgroundColor = '#001429';
     
-    // Use Mapbox's Navigation Night style for a blue theme
-    // Replace this with your actual Mapbox access token
+    // Add Mapbox blue themed base map layer - SIMPLIFIED APPROACH
     const mapboxAccessToken = 'pk.eyJ1Ijoia2lwdG9vMDEiLCJhIjoiY202cGlvdnRhMDRxZDJrc2JpbWprN25kaCJ9.YlAHNXzq6IJ8nfoHo0gjTQ';
     
+    // Use Mapbox's dark style directly without modifications
     var layer_MapboxBlue_0 = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/{z}/{x}/{y}?access_token=' + mapboxAccessToken, {
-        pane: 'pane_MapboxBlue_0',
-        opacity: 1.0,
         attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        pane: 'pane_MapboxBlue_0',
+        opacity: 1,
         minZoom: 2,
-        maxZoom: 28
+        maxZoom: 28,
+        tileSize: 512,
+        zoomOffset: -1
     });
     map.addLayer(layer_MapboxBlue_0);
+
+    // Add blue tint to the tiles via CSS
+    const tilePane = document.querySelector('.leaflet-tile-pane');
+    if (tilePane) {
+        tilePane.style.filter = 'hue-rotate(210deg) brightness(1.1) saturate(1.2)';
+    }
+
+    // Apply the filter to new tiles as they're loaded
+    map.on('tileloadstart', function() {
+        const tilePane = document.querySelector('.leaflet-tile-pane');
+        if (tilePane && !tilePane.style.filter) {
+            tilePane.style.filter = 'hue-rotate(210deg) brightness(1.1) saturate(1.2)';
+        }
+    });
     
     // Function to extract city from address
     function extractCity(address) {
@@ -718,16 +782,16 @@
         layer.bindPopup(content, { maxHeight: 400 });
     }
 
-    // Styling function for church points - Updated to match the image color scheme
+    // Styling function for church points - Simple and clean
     function style_complete_parish_data_1_0(feature) {
         // Style based on type
         var markerStyle = {
             pane: 'pane_complete_parish_data_1',
             shape: 'circle',
-            radius: 4,
+            radius: 5.5, // Slightly larger default radius
             opacity: 1,
             color: '#ffffff', // White outline
-            weight: 1,
+            weight: 1.5,      // Thicker outline for better visibility
             fill: true,
             fillOpacity: 1,
             fillColor: '#87CEEB', // Light blue default color
@@ -738,31 +802,36 @@
         var rite = feature.properties.Rite || '';
         var title = (feature.properties.Title || '').toLowerCase();
         
-        // Style based on type - Match image colors
+        // Style based on type - Simple and clear colors
         if (type.toLowerCase().includes('basilica')) {
             markerStyle.shape = 'diamond';
             markerStyle.fillColor = '#FFD700'; // Gold for Basilicas
-            markerStyle.radius = 7;
+            markerStyle.radius = 8;
+            markerStyle.weight = 2; // Thicker outline
         } else if (type.toLowerCase().includes('cathedral')) {
             markerStyle.shape = 'triangle';
             markerStyle.fillColor = '#FF4500'; // Red-orange for Cathedrals
-            markerStyle.radius = 7;
+            markerStyle.radius = 8;
+            markerStyle.weight = 2; // Thicker outline
         } else if (type.toLowerCase().includes('shrine') || title.includes('shrine')) {
             markerStyle.fillColor = '#FF4500'; // Red-orange for Shrines
-            markerStyle.radius = 6;
+            markerStyle.radius = 7;
+            markerStyle.weight = 1.5; // Slightly thicker outline
         } else if (type.toLowerCase().includes('parish')) {
             markerStyle.fillColor = '#87CEEB'; // Light blue for Parish Churches
-            markerStyle.radius = 4;
+            markerStyle.radius = 5;
         } else if (type.toLowerCase().includes('monument')) {
             markerStyle.shape = 'cross';  
             markerStyle.fillColor = '#FFD700'; // Gold for monuments/crosses
-            markerStyle.radius = 7;
+            markerStyle.radius = 8;
+            markerStyle.weight = 2; // Thicker outline
         }
         
         // Make important churches larger and red like in the image
         if (title.includes('our lady')) {
             markerStyle.fillColor = '#FF4500'; // Red-orange for Marian churches
-            markerStyle.radius = 6;
+            markerStyle.radius = 7;
+            markerStyle.weight = 1.5; // Slightly thicker outline
         }
         
         return markerStyle;
@@ -802,9 +871,9 @@
     var markers = L.markerClusterGroup({
         showCoverageOnHover: false,
         spiderfyDistanceMultiplier: 2,
-        // Always cluster until there's only one point
-        disableClusteringAtZoom: null, // Set to null to always cluster
-        maxClusterRadius: 80, // Increased for more aggressive clustering
+        // Disable clustering at high zoom levels for better interaction
+        disableClusteringAtZoom: 18,
+        maxClusterRadius: 60, // Reduced for less aggressive clustering
         spiderfyOnMaxZoom: true,
         chunkedLoading: true,
         zoomToBoundsOnClick: true, // Ensure clicking on a cluster zooms to its bounds
@@ -813,7 +882,7 @@
                 console.log('Cluster rendering completed in ' + elapsed + 'ms');
             }
         },
-        // Custom cluster icon styling with blue colors to match map theme
+        // Custom cluster icon styling
         iconCreateFunction: function(cluster) {
             const count = cluster.getChildCount();
             let size, className;
@@ -854,13 +923,24 @@
     // Add layer control
     var overlaysTree = [
         {label: '<img src="legend/complete_parish_data_1.png" /> Churches', layer: markers},
-        {label: "Dark Blue Map", layer: layer_MapboxBlue_0}
+        {label: "Dark Map", layer: layer_MapboxBlue_0}
     ];
     
     var lay = L.control.layers.tree(null, overlaysTree, {
         collapsed: true,
     });
     lay.addTo(map);
+    
+    // Function to get churches in current visible bounds
+    function getChurchesInVisibleBounds() {
+        const bounds = map.getBounds();
+        
+        return allChurches.filter(feature => {
+            const lat = feature.geometry.coordinates[1];
+            const lng = feature.geometry.coordinates[0];
+            return bounds.contains([lat, lng]);
+        });
+    }
 </script>
 <script>
     // Searchable dropdown handling
@@ -892,7 +972,7 @@
             if (event.target.classList.contains('dropdown-item')) {
                 input.value = event.target.textContent;
                 suggestions.style.display = 'none';
-                applyFilters();
+                applyFilters(true); // true indicates filter was manually changed
             }
         });
     }
@@ -993,15 +1073,16 @@
             
             // Click event to locate on map
             item.addEventListener('click', function() {
-                // Fly to location
-                map.flyTo([
-                    feature.geometry.coordinates[1], 
-                    feature.geometry.coordinates[0]
-                ], 16);
+                // Fly to location with clean animation
+                const lat = feature.geometry.coordinates[1];
+                const lng = feature.geometry.coordinates[0];
+                const zoom = 16;
                 
-                // Create a temporary marker for highlighting
+                // Fly to location
+                map.flyTo([lat, lng], zoom);
+                
+                // This delay ensures the map has finished moving
                 setTimeout(function() {
-                    // This delay ensures the map has finished moving
                     markers.eachLayer(function(layer) {
                         if (layer.feature && layer.feature.properties.id === feature.properties.id) {
                             layer.openPopup();
@@ -1035,80 +1116,165 @@
         });
     });
     
-    // Function to apply filters and update map and list
-    function applyFilters() {
-        // Get filter values
-        const titleFilter = document.getElementById('title-search').value.toLowerCase();
-        const cityFilter = document.getElementById('city-search').value.toLowerCase();
-        const countryFilter = document.getElementById('country-search').value.toLowerCase();
-        const jurisdictionFilter = document.getElementById('jurisdiction-search').value.toLowerCase();
-        const typeFilter = document.getElementById('type-search').value.toLowerCase();
-        const riteFilter = document.getElementById('rite-search').value.toLowerCase();
+    // Check if any filters are active
+    function checkActiveFilters() {
+        const titleFilter = document.getElementById('title-search').value;
+        const cityFilter = document.getElementById('city-search').value;
+        const countryFilter = document.getElementById('country-search').value;
+        const jurisdictionFilter = document.getElementById('jurisdiction-search').value;
+        const typeFilter = document.getElementById('type-search').value;
+        const riteFilter = document.getElementById('rite-search').value;
         
-        // Show loading indicator
-        document.getElementById('filter-info').textContent = 'Filtering churches...';
+        // Check if any filter has a value
+        isFilterActive = titleFilter || cityFilter || countryFilter || 
+                        jurisdictionFilter || typeFilter || riteFilter;
         
-        // Use setTimeout to allow UI to update before heavy processing
-        setTimeout(function() {
-            // Clear existing layers
-            markers.clearLayers();
-            
-            // Filter features
-            filteredChurches = allChurches.filter(feature => {
-                const props = feature.properties;
-                
-                // Extract properties (defaults to empty string if null)
-                const title = (props.Title || '').toLowerCase();
-                const city = (props.City || '').toLowerCase();
-                const country = (props.Country || '').toLowerCase();
-                const jurisdiction = (props.Jurisdiction || '').toLowerCase();
-                const type = (props.Type || '').toLowerCase();
-                const rite = (props.Rite || '').toLowerCase();
-                
-                // Apply filters (partial matching for all fields)
-                const titleMatch = !titleFilter || title.includes(titleFilter) || titleFilter === 'all';
-                const cityMatch = !cityFilter || city.includes(cityFilter) || cityFilter === 'all';
-                const countryMatch = !countryFilter || country.includes(countryFilter) || countryFilter === 'all';
-                const jurisdictionMatch = !jurisdictionFilter || jurisdiction.includes(jurisdictionFilter) || jurisdictionFilter === 'all';
-                const typeMatch = !typeFilter || type.includes(typeFilter) || typeFilter === 'all';
-                const riteMatch = !riteFilter || rite.includes(riteFilter) || riteFilter === 'all';
-                
-                // Return true if all filters match
-                return titleMatch && cityMatch && countryMatch && jurisdictionMatch && typeMatch && riteMatch;
+        // Update UI based on filter status
+        if (isFilterActive) {
+            document.getElementById('filter-active-indicator').style.display = 'block';
+            document.getElementById('zoom-to-filter').style.display = 'block';
+        } else {
+            document.getElementById('filter-active-indicator').style.display = 'none';
+            document.getElementById('zoom-to-filter').style.display = 'none';
+        }
+        
+        return isFilterActive;
+    }
+    
+    // Find this section in Part 4 (filtering logic) and replace it with this updated version:
+
+// Function to apply filters and update map and list
+function applyFilters(manuallyChanged = false) {
+    // Get filter values
+    const titleFilter = document.getElementById('title-search').value.toLowerCase();
+    const cityFilter = document.getElementById('city-search').value.toLowerCase();
+    const countryFilter = document.getElementById('country-search').value.toLowerCase();
+    const jurisdictionFilter = document.getElementById('jurisdiction-search').value.toLowerCase();
+    const typeFilter = document.getElementById('type-search').value.toLowerCase();
+    const riteFilter = document.getElementById('rite-search').value.toLowerCase();
+    
+    // Check if any filters are active
+    const filtersActive = checkActiveFilters();
+    
+    // Store whether this is a filter change
+    if (manuallyChanged) {
+        hasAppliedFilters = true;
+    }
+    
+    // Show loading indicator
+    document.getElementById('filter-info').textContent = 'Filtering churches...';
+    
+    // Use setTimeout to allow UI to update before heavy processing
+    setTimeout(function() {
+        // Clear existing layers
+        markers.clearLayers();
+        
+        // Base collection to filter from - ALWAYS start with all churches
+        let baseCollection = allChurches;
+        
+        // If no filters active, only filter by current view bounds
+        if (!filtersActive) {
+            // When no filters active, use the current map bounds to limit which churches to show
+            const bounds = map.getBounds();
+            baseCollection = baseCollection.filter(feature => {
+                const lat = feature.geometry.coordinates[1];
+                const lng = feature.geometry.coordinates[0];
+                return bounds.contains([lat, lng]);
             });
+        }
+        
+        // Apply content filters (name, city, country, etc.)
+        filteredChurches = baseCollection.filter(feature => {
+            const props = feature.properties;
             
-            // Limit number of markers for performance
-            const maxVisibleMarkers = 5000;
-            const visibleChurches = filteredChurches.slice(0, maxVisibleMarkers);
-            
-            // Create GeoJSON for the map
-            const tempGeoJson = {
-                "type": "FeatureCollection",
-                "features": visibleChurches
-            };
-            
-            // Add markers in batch for better performance
-            if (tempGeoJson.features.length > 0) {
-                var tempLayer = L.geoJson(tempGeoJson, {
-                    onEachFeature: pop_complete_parish_data_1,
-                    pointToLayer: function(feature, latlng) {
-                        return L.shapeMarker(latlng, style_complete_parish_data_1_0(feature));
-                    }
-                });
-                
-                markers.addLayer(tempLayer);
-                map.addLayer(markers);
+            // If no filters are active, include all churches in current view
+            if (!filtersActive) {
+                return true;
             }
             
-            // Update info text
-            document.getElementById('filter-info').textContent = 
-                `Showing ${visibleChurches.length} of ${filteredChurches.length} filtered churches ` +
-                `(${allChurches.length} total)`;
+            // Extract properties (defaults to empty string if null)
+            const title = (props.Title || '').toLowerCase();
+            const city = (props.City || '').toLowerCase();
+            const country = (props.Country || '').toLowerCase();
+            const jurisdiction = (props.Jurisdiction || '').toLowerCase();
+            const type = (props.Type || '').toLowerCase();
+            const rite = (props.Rite || '').toLowerCase();
             
-            // Update church list
-            populateChurchList(visibleChurches);
+            // Apply filters (partial matching for all fields)
+            const titleMatch = !titleFilter || titleFilter === 'all' || title.includes(titleFilter);
+            const cityMatch = !cityFilter || cityFilter === 'all' || city.includes(cityFilter);
+            const countryMatch = !countryFilter || countryFilter === 'all' || country.includes(countryFilter);
+            const jurisdictionMatch = !jurisdictionFilter || jurisdictionFilter === 'all' || jurisdiction.includes(jurisdictionFilter);
+            const typeMatch = !typeFilter || typeFilter === 'all' || type.includes(typeFilter);
+            const riteMatch = !riteFilter || riteFilter === 'all' || rite.includes(riteFilter);
             
-        }, 50); // Small delay to let the UI update
+            // Return true if all filters match
+            return titleMatch && cityMatch && countryMatch && jurisdictionMatch && typeMatch && riteMatch;
+        });
+        
+        // Set ALL filtered churches as visible - don't limit the count
+        visibleChurches = filteredChurches;
+        
+        // Create GeoJSON for the map
+        const tempGeoJson = {
+            "type": "FeatureCollection",
+            "features": visibleChurches
+        };
+        
+        // Add markers in batch for better performance
+        if (tempGeoJson.features.length > 0) {
+            var tempLayer = L.geoJson(tempGeoJson, {
+                onEachFeature: pop_complete_parish_data_1,
+                pointToLayer: function(feature, latlng) {
+                    return L.shapeMarker(latlng, style_complete_parish_data_1_0(feature));
+                }
+            });
+            
+            markers.addLayer(tempLayer);
+            map.addLayer(markers);
+            
+            // Zoom to filtered results if filters were manually changed
+            if (manuallyChanged && filtersActive) {
+                // Only automatically zoom if results aren't already visible
+                if (!map.getBounds().contains(markers.getBounds())) {
+                    zoomToFilteredResults();
+                }
+            }
+        }
+        
+        // Update info text
+        document.getElementById('filter-info').textContent = 
+            `Showing ${visibleChurches.length} of ${filteredChurches.length} filtered churches ` +
+            `(${allChurches.length} total)`;
+        
+        // Update church list
+        const listLimit = filtersActive ? 
+            Math.min(visibleChurches.length, 1000) : // Show all filtered churches up to 1000
+            Math.min(visibleChurches.length, 1000);  // Show all visible churches up to 1000
+        populateChurchList(visibleChurches.slice(0, listLimit));
+        
+    }, 50); // Small delay to let the UI update
+}
+    
+    // Function to zoom to filtered results
+    function zoomToFilteredResults() {
+        if (filteredChurches.length > 0) {
+            // Create a bounds object from the filtered churches
+            const points = filteredChurches.map(feature => {
+                return [
+                    feature.geometry.coordinates[1], 
+                    feature.geometry.coordinates[0]
+                ];
+            });
+            
+            const bounds = L.latLngBounds(points);
+            
+            // Add padding to make sure all points are visible
+            map.fitBounds(bounds, {
+                padding: [50, 50],
+                maxZoom: 12 // Limit zoom level for better context
+            });
+        }
     }
     
     // Reset filters function
@@ -1127,10 +1293,18 @@
             item.style.display = '';
         });
         
+        // Reset filter flags
+        isFilterActive = false;
+        hasAppliedFilters = false;
+        document.getElementById('filter-active-indicator').style.display = 'none';
+        document.getElementById('zoom-to-filter').style.display = 'none';
+        
         applyFilters();
     }
+    
+    // Add event listener for the zoom-to-filter button
+    document.getElementById('zoom-to-filter').addEventListener('click', zoomToFilteredResults);
 </script>
-
 <!-- Map Initialization Function -->
 <script>
     // Modified function to initialize the map after data is loaded
@@ -1181,9 +1355,6 @@
             }
         });
         
-        // Initial filtering (show all churches)
-        filteredChurches = allChurches;
-        
         // Setup searchable dropdowns
         setupSearchableDropdown('title-search', 'title-suggestions', uniqueTitles);
         setupSearchableDropdown('city-search', 'city-suggestions', uniqueCities);
@@ -1192,18 +1363,9 @@
         setupSearchableDropdown('type-search', 'type-suggestions', uniqueTypes);
         setupSearchableDropdown('rite-search', 'rite-suggestions', uniqueRites);
         
-        // Add event listeners to filters (apply on input)
-        document.getElementById('title-search').addEventListener('input', debounce(applyFilters, 500));
-        document.getElementById('city-search').addEventListener('input', debounce(applyFilters, 500));
-        document.getElementById('country-search').addEventListener('input', debounce(applyFilters, 500));
-        document.getElementById('jurisdiction-search').addEventListener('input', debounce(applyFilters, 500));
-        document.getElementById('type-search').addEventListener('input', debounce(applyFilters, 500));
-        document.getElementById('rite-search').addEventListener('input', debounce(applyFilters, 500));
+        // Add event listeners to filters (apply after delay to prevent excessive updates)
+        const debounceDelay = 500; // 500ms delay
         
-        // Reset filters button
-        document.getElementById('reset-filters').addEventListener('click', resetFilters);
-        
-        // Helper function to debounce filter application
         function debounce(func, wait) {
             let timeout;
             return function() {
@@ -1216,17 +1378,35 @@
             };
         }
         
+        // Create debounced version of applyFilters that also indicates a manual change
+        const debounceApplyFilters = debounce(function() {
+            applyFilters(true); // true indicates filter was manually changed
+        }, debounceDelay);
+        
+        // Attach event listeners to input fields
+        document.getElementById('title-search').addEventListener('input', debounceApplyFilters);
+        document.getElementById('city-search').addEventListener('input', debounceApplyFilters);
+        document.getElementById('country-search').addEventListener('input', debounceApplyFilters);
+        document.getElementById('jurisdiction-search').addEventListener('input', debounceApplyFilters);
+        document.getElementById('type-search').addEventListener('input', debounceApplyFilters);
+        document.getElementById('rite-search').addEventListener('input', debounceApplyFilters);
+        
+        // Reset filters button
+        document.getElementById('reset-filters').addEventListener('click', resetFilters);
+        
         // Update visible churches when map moves
         map.on('moveend', debounce(function() {
-            // Only re-apply filters if there's a significant change in view
-            applyFilters();
+            // Only update the map if no filters are active
+            if (!isFilterActive) {
+                applyFilters(false); // false indicates this was not a manual filter change
+            }
         }, 300));
         
-        // Initial update with all churches
+        // Initial update with visible churches
         applyFilters();
         
-        // Initially populate the church list
-        populateChurchList(allChurches.slice(0, 1000)); // Show first 1000 for performance
+        // Update church list based on current view
+        populateChurchList(getChurchesInVisibleBounds().slice(0, 1000)); 
         
         // Show church list panel on desktop
         if (window.innerWidth >= 768) {
