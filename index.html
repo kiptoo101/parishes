@@ -65,6 +65,7 @@
             
             .panel-content.collapsed {
                 max-height: 0;
+                display: none; /* Hide completely when collapsed for better space usage */
             }
             
             .toggle-btn {
@@ -100,52 +101,94 @@
                 display: none; /* Initially hidden on mobile */
             }
             
+            /* Enhanced mobile-specific adjustments */
             @media (min-width: 768px) {
                 #church-list-panel {
                     display: block;
+                }
+                
+                .panel-content {
+                    display: block !important; /* Always show on desktop */
                 }
             }
             
             /* Mobile-specific adjustments */
             @media (max-width: 767px) {
                 .panel {
-                    max-height: 70vh;
+                    max-height: 60vh; /* Reduced height on mobile */
+                    max-width: 85%;
+                    box-shadow: 0 0 15px rgba(0,0,0,0.3); /* Stronger shadow for better visibility */
                 }
                 
                 #filter-panel {
-                    width: 80%;
-                    max-width: 250px;
+                    width: 85%;
+                    max-width: 280px;
                     right: 5px;
+                    top: 5px; /* Position closer to top */
                 }
                 
                 #legend {
                     bottom: 10px;
                     right: 5px;
                     max-width: 160px;
+                    z-index: 999; /* Ensure it's above other elements */
+                }
+                
+                .panel-content {
+                    display: none; /* Initially collapsed on mobile */
+                }
+                
+                .panel-header {
+                    padding: 8px; /* Larger touch target */
                 }
                 
                 /* Mobile toggle button for church list panel */
                 #mobile-toggle-list {
                     position: absolute;
-                    top: 80px;
+                    top: 50px; /* Positioned lower to avoid overlapping with filter panel */
                     right: 10px;
                     z-index: 1000;
                     background: #003366;
                     color: white;
-                    padding: 8px;
+                    padding: 8px 12px; /* Larger padding for better touch target */
                     border-radius: 4px;
                     display: block;
                     border: none;
                     cursor: pointer;
+                    font-size: 14px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
                 }
                 
                 /* When visible on mobile */
                 #church-list-panel.mobile-visible {
                     display: block;
                     right: 5px;
-                    width: 80%;
-                    max-width: 300px;
-                    top: 120px;
+                    width: 85%;
+                    max-width: 280px;
+                    top: 90px; /* Position below mobile toggle button */
+                }
+                
+                /* Mobile-specific panel transitions */
+                .panel {
+                    transition: transform 0.3s ease, opacity 0.3s ease;
+                }
+                
+                .panel.minimized {
+                    transform: scale(0.95);
+                    opacity: 0.9;
+                }
+                
+                /* Make text smaller on mobile */
+                .panel-content {
+                    font-size: 14px;
+                }
+                
+                /* Better visibility for toggle buttons */
+                .toggle-btn {
+                    font-size: 18px;
+                    min-width: 25px;
+                    min-height: 25px;
+                    color: #002244; /* Darker color for better contrast */
                 }
             }
             
@@ -211,7 +254,7 @@
             
             /* Church list item */
             .church-item {
-                padding: 10px; /* Larger padding for better touch targets */
+                padding: 12px; /* Larger padding for better touch targets */
                 border-bottom: 1px solid #cce0ff; /* Light blue border */
                 cursor: pointer;
                 transition: background-color 0.2s;
@@ -356,7 +399,7 @@
             }
             
             .dropdown-item {
-                padding: 10px; /* Larger touch target for mobile */
+                padding: 12px; /* Larger touch target for mobile */
                 cursor: pointer;
                 font-size: 14px; /* Slightly larger text for mobile */
             }
@@ -399,7 +442,7 @@
             
             /* Mobile-specific buttons */
             .mobile-btn {
-                padding: 10px;
+                padding: 10px 12px; /* Slightly larger horizontal padding */
                 background: #003366;
                 color: white;
                 border: none;
@@ -408,6 +451,7 @@
                 font-size: 14px;
                 margin-top: 5px;
                 display: none;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Add shadow for better visibility */
             }
             
             @media (max-width: 767px) {
@@ -422,14 +466,49 @@
                 /* Make sure buttons have enough space between them for touch */
                 #reset-filters, #zoom-to-filter, .mobile-btn {
                     margin-bottom: 10px;
+                    padding: 12px 10px; /* Taller for better touch targets */
                 }
                 
                 /* Enhanced touch targets for leaflet controls */
                 .leaflet-touch .leaflet-control-layers, 
                 .leaflet-touch .leaflet-bar a {
-                    min-width: 30px;
-                    min-height: 30px;
-                    line-height: 30px;
+                    min-width: 35px; /* Increased from 30px */
+                    min-height: 35px; /* Increased from 30px */
+                    line-height: 35px; /* Match the min-height */
+                }
+                
+                /* Improved visibility for map controls */
+                .leaflet-control-zoom a {
+                    font-size: 18px !important; /* Larger icons */
+                    font-weight: bold;
+                }
+                
+                /* Make filter inputs larger on mobile */
+                .search-input {
+                    height: 40px; /* Taller input fields */
+                    font-size: 16px; /* Prevent zoom on iOS */
+                }
+                
+                /* Fix for iOS preventing zooming on inputs */
+                input[type="text"] {
+                    font-size: 16px !important;
+                }
+                
+                /* Add collapse all button for mobile */
+                #collapse-all-panels {
+                    position: absolute;
+                    bottom: 70px;
+                    right: 10px;
+                    z-index: 1000;
+                    background: #003366;
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    display: block;
+                    border: none;
+                    cursor: pointer;
+                    font-size: 14px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
                 }
             }
         </style>
@@ -441,13 +520,16 @@
         <!-- Mobile Toggle for List Panel -->
         <button id="mobile-toggle-list" class="mobile-btn">Show Churches List</button>
         
+        <!-- Collapse All Panels Button - New for mobile -->
+        <button id="collapse-all-panels" class="mobile-btn">Collapse All Panels</button>
+        
         <!-- Filter Panel -->
         <div id="filter-panel" class="panel">
           <div class="panel-header" onclick="togglePanel('filter-content')">
             <h4>Filter Churches</h4>
-            <button class="toggle-btn" id="filter-toggle">−</button>
+            <button class="toggle-btn" id="filter-toggle">+</button>
           </div>
-          <div id="filter-content" class="panel-content">
+          <div id="filter-content" class="panel-content collapsed">
             <!-- Church Title Search -->
             <div class="filter-section">
               <label for="title-search">Church Name:</label>
@@ -502,7 +584,7 @@
               </div>
             </div>
             
-            <button id="reset-filters" style="width: 100%; padding: 10px; background: #4682B4; color: white; border: 1px solid #3366cc; cursor: pointer; border-radius: 4px; font-size: 14px;">Reset Filters</button>
+            <button id="reset-filters" style="width: 100%; padding: 12px; background: #4682B4; color: white; border: 1px solid #3366cc; cursor: pointer; border-radius: 4px; font-size: 14px;">Reset Filters</button>
             
             <button id="zoom-to-filter">Zoom to Filtered Results</button>
             
@@ -516,10 +598,10 @@
         <div id="church-list-panel" class="panel">
           <div class="panel-header" onclick="togglePanel('church-list-content')">
             <h4>Churches List</h4>
-            <button class="toggle-btn" id="church-list-toggle">−</button>
+            <button class="toggle-btn" id="church-list-toggle">+</button>
           </div>
           
-          <div id="church-list-content" class="panel-content">
+          <div id="church-list-content" class="panel-content collapsed">
             <div class="search-container">
               <input type="text" id="list-search" class="search-input" placeholder="Filter list...">
             </div>
@@ -534,11 +616,11 @@
         <div id="legend" class="panel">
           <div class="panel-header" onclick="togglePanel('legend-content')">
             <h4>Legend</h4>
-            <button class="toggle-btn" id="legend-toggle">−</button>
+            <button class="toggle-btn" id="legend-toggle">+</button>
           </div>
           
           <!-- Updated legend section with actual images -->
-          <div id="legend-content" class="panel-content">
+          <div id="legend-content" class="panel-content collapsed">
             <div class="legend-item">
               <img src="cathedral-icon.png" class="legend-image cathedral-icon-yellow" alt="Cathedral" />
               <div class="legend-text">Basilica or Cathedral</div>
@@ -594,7 +676,108 @@
             flex: 1;
             color: #003366; /* Dark blue */
           }
+          
+          /* Mobile-optimized legend */
+          @media (max-width: 767px) {
+            .legend-item {
+              margin-bottom: 15px; /* More space between items */
+            }
+            
+            .legend-image {
+              width: 28px; /* Larger icons */
+              height: 28px;
+            }
+            
+            .legend-text {
+              font-size: 14px; /* Slightly larger text */
+            }
+          }
+          
+          /* Quick access floating action button for mobile */
+          #mobile-quick-actions {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #003366;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+            z-index: 1000;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+          }
+          
+          #mobile-actions-menu {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            width: 160px;
+          }
+          
+          .mobile-action-item {
+            padding: 12px;
+            text-align: left;
+            border: none;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            font-size: 14px;
+            color: #003366;
+            display: flex;
+            align-items: center;
+          }
+          
+          .mobile-action-item:last-child {
+            border-bottom: none;
+          }
+          
+          .mobile-action-item:hover, .mobile-action-item:active {
+            background: #f0f8ff;
+          }
+          
+          .mobile-action-icon {
+            margin-right: 8px;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+          }
+          
+          @media (max-width: 767px) {
+            #mobile-quick-actions {
+              display: flex;
+            }
+          }
         </style>
+        
+        <!-- Quick Action Button for Mobile -->
+        <button id="mobile-quick-actions">+</button>
+        <div id="mobile-actions-menu">
+          <button class="mobile-action-item" id="action-toggle-filter">
+            <span class="mobile-action-icon">🔍</span>Filters
+          </button>
+          <button class="mobile-action-item" id="action-toggle-list">
+            <span class="mobile-action-icon">📋</span>Churches
+          </button>
+          <button class="mobile-action-item" id="action-toggle-legend">
+            <span class="mobile-action-icon">🔎</span>Legend
+          </button>
+          <button class="mobile-action-item" id="action-my-location">
+            <span class="mobile-action-icon">📍</span>My Location
+          </button>
+        </div>
         
         <div id="map">
         </div>
@@ -623,7 +806,6 @@
         <script src="js/labels.js"></script>
         <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
         <script src="js/leaflet.markercluster.js"></script>
-
         <!-- Data Chunk Loading System -->
         <script>
             // Configuration for chunk loading
@@ -710,44 +892,252 @@
             let isFilterActive = false;
             let hasAppliedFilters = false;
             let isMobile = window.innerWidth < 768;
+            
+            // Mobile state tracking
+            let activeMobilePanel = null;
+            let quickActionsMenuOpen = false;
 
-            // Panel toggle functionality
+            // Enhanced panel toggle functionality with mobile awareness
             function togglePanel(contentId) {
                 var content = document.getElementById(contentId);
                 var toggleBtn = document.getElementById(contentId.split('-')[0] + '-toggle');
                 
+                // If on mobile, close any other open panel first
+                if (isMobile && content.style.display !== 'block') {
+                    closeAllPanelsExcept(contentId);
+                }
+                
                 if (content.classList.contains('collapsed')) {
                     content.classList.remove('collapsed');
+                    content.style.display = 'block';
                     toggleBtn.textContent = '−';
+                    
+                    // Track active mobile panel
+                    if (isMobile) {
+                        activeMobilePanel = contentId;
+                    }
                 } else {
                     content.classList.add('collapsed');
+                    content.style.display = 'none';
                     toggleBtn.textContent = '+';
+                    
+                    // Clear active panel reference
+                    if (isMobile && activeMobilePanel === contentId) {
+                        activeMobilePanel = null;
+                    }
                 }
             }
+            
+            // Close all panels except one that's being opened
+            function closeAllPanelsExcept(exceptContentId) {
+                const panelContents = document.querySelectorAll('.panel-content');
+                panelContents.forEach(panel => {
+                    if (panel.id !== exceptContentId) {
+                        panel.classList.add('collapsed');
+                        panel.style.display = 'none';
+                        
+                        // Update toggle button text
+                        const panelId = panel.id.split('-')[0];
+                        const toggleBtn = document.getElementById(panelId + '-toggle');
+                        if (toggleBtn) {
+                            toggleBtn.textContent = '+';
+                        }
+                    }
+                });
+            }
+            
+            // Close all panels
+            function closeAllPanels() {
+                const panelContents = document.querySelectorAll('.panel-content');
+                panelContents.forEach(panel => {
+                    panel.classList.add('collapsed');
+                    panel.style.display = 'none';
+                    
+                    // Update toggle button text
+                    const panelId = panel.id.split('-')[0];
+                    const toggleBtn = document.getElementById(panelId + '-toggle');
+                    if (toggleBtn) {
+                        toggleBtn.textContent = '+';
+                    }
+                });
+                
+                // Clear active panel reference
+                activeMobilePanel = null;
+            }
 
-            // Mobile detection
+            // Mobile detection with enhanced functionality
             function checkMobile() {
+                const wasMobile = isMobile;
                 isMobile = window.innerWidth < 768;
-                adjustForMobile();
+                
+                // Only adjust if the state changed
+                if (wasMobile !== isMobile) {
+                    adjustForMobile();
+                    
+                    // Reset panel states when switching between mobile and desktop
+                    resetPanelStates();
+                }
+            }
+            
+            // Reset panels to appropriate state based on device
+            function resetPanelStates() {
+                const panelContents = document.querySelectorAll('.panel-content');
+                
+                if (isMobile) {
+                    // On mobile, collapse all panels
+                    panelContents.forEach(panel => {
+                        panel.classList.add('collapsed');
+                        panel.style.display = 'none';
+                        
+                        // Update toggle button text
+                        const panelId = panel.id.split('-')[0];
+                        const toggleBtn = document.getElementById(panelId + '-toggle');
+                        if (toggleBtn) {
+                            toggleBtn.textContent = '+';
+                        }
+                    });
+                    
+                    // Hide church list panel
+                    document.getElementById('church-list-panel').style.display = 'none';
+                    
+                    // Show mobile-specific controls
+                    document.getElementById('mobile-toggle-list').style.display = 'block';
+                    document.getElementById('collapse-all-panels').style.display = 'block';
+                    document.getElementById('mobile-quick-actions').style.display = 'flex';
+                } else {
+                    // On desktop, expand all panels
+                    panelContents.forEach(panel => {
+                        panel.classList.remove('collapsed');
+                        panel.style.display = 'block';
+                        
+                        // Update toggle button text
+                        const panelId = panel.id.split('-')[0];
+                        const toggleBtn = document.getElementById(panelId + '-toggle');
+                        if (toggleBtn) {
+                            toggleBtn.textContent = '−';
+                        }
+                    });
+                    
+                    // Show church list panel
+                    document.getElementById('church-list-panel').style.display = 'block';
+                    
+                    // Hide mobile-specific controls
+                    document.getElementById('mobile-toggle-list').style.display = 'none';
+                    document.getElementById('collapse-all-panels').style.display = 'none';
+                    document.getElementById('mobile-quick-actions').style.display = 'none';
+                    document.getElementById('mobile-actions-menu').style.display = 'none';
+                }
             }
             
             // Adjust interface for mobile devices
             function adjustForMobile() {
+                // Update panel display based on device
                 if (isMobile) {
                     // Hide church list panel by default on mobile
                     document.getElementById('church-list-panel').style.display = 'none';
                     document.getElementById('mobile-toggle-list').style.display = 'block';
+                    document.getElementById('collapse-all-panels').style.display = 'block';
+                    document.getElementById('mobile-quick-actions').style.display = 'flex';
+                    
+                    // Reduce cluster threshold for better mobile performance
+                    if (markers) {
+                        markers.options.disableClusteringAtZoom = 16;
+                        markers.options.maxClusterRadius = 80;
+                    }
                     
                     // Adjust map controls for better touch
                     const mapControls = document.querySelectorAll('.leaflet-control-layers, .leaflet-control-zoom a');
                     mapControls.forEach(control => {
                         control.style.padding = '8px';
                     });
+                    
+                    // Set all panels to collapsed state
+                    closeAllPanels();
                 } else {
                     // Show church list panel on desktop
                     document.getElementById('church-list-panel').style.display = 'block';
                     document.getElementById('mobile-toggle-list').style.display = 'none';
+                    document.getElementById('collapse-all-panels').style.display = 'none';
+                    document.getElementById('mobile-quick-actions').style.display = 'none';
+                    document.getElementById('mobile-actions-menu').style.display = 'none';
+                    
+                    // Reset cluster settings for desktop
+                    if (markers) {
+                        markers.options.disableClusteringAtZoom = 18;
+                        markers.options.maxClusterRadius = 60;
+                    }
+                    
+                    // Show all panel content on desktop
+                    const panelContents = document.querySelectorAll('.panel-content');
+                    panelContents.forEach(panel => {
+                        panel.classList.remove('collapsed');
+                        panel.style.display = 'block';
+                        
+                        // Update toggle button text
+                        const panelId = panel.id.split('-')[0];
+                        const toggleBtn = document.getElementById(panelId + '-toggle');
+                        if (toggleBtn) {
+                            toggleBtn.textContent = '−';
+                        }
+                    });
                 }
+            }
+            
+            // Toggle quick actions menu
+            function toggleQuickActionsMenu() {
+                const menu = document.getElementById('mobile-actions-menu');
+                const quickActionsBtn = document.getElementById('mobile-quick-actions');
+                
+                if (quickActionsMenuOpen) {
+                    menu.style.display = 'none';
+                    quickActionsBtn.textContent = '+';
+                } else {
+                    menu.style.display = 'flex';
+                    quickActionsBtn.textContent = '×';
+                }
+                
+                quickActionsMenuOpen = !quickActionsMenuOpen;
+            }
+            
+            // Setup mobile action handlers
+            function setupMobileActions() {
+                // Quick actions button
+                document.getElementById('mobile-quick-actions').addEventListener('click', toggleQuickActionsMenu);
+                
+                // Action: Toggle Filter Panel
+                document.getElementById('action-toggle-filter').addEventListener('click', function() {
+                    togglePanel('filter-content');
+                    toggleQuickActionsMenu(); // Close menu after action
+                });
+                
+                // Action: Toggle Churches List
+                document.getElementById('action-toggle-list').addEventListener('click', function() {
+                    // Make church list panel visible first if it's hidden
+                    const panel = document.getElementById('church-list-panel');
+                    if (panel.style.display === 'none' || !panel.style.display) {
+                        panel.style.display = 'block';
+                        panel.classList.add('mobile-visible');
+                    }
+                    
+                    togglePanel('church-list-content');
+                    toggleQuickActionsMenu(); // Close menu after action
+                });
+                
+                // Action: Toggle Legend
+                document.getElementById('action-toggle-legend').addEventListener('click', function() {
+                    togglePanel('legend-content');
+                    toggleQuickActionsMenu(); // Close menu after action
+                });
+                
+                // Action: My Location
+                document.getElementById('action-my-location').addEventListener('click', function() {
+                    // Trigger locate control
+                    document.querySelector('.leaflet-control-locate a').click();
+                    toggleQuickActionsMenu(); // Close menu after action
+                });
+                
+                // Collapse All Panels button
+                document.getElementById('collapse-all-panels').addEventListener('click', closeAllPanels);
             }
             
             // Mobile toggle for church list panel
@@ -757,6 +1147,12 @@
                     panel.style.display = 'block';
                     panel.classList.add('mobile-visible');
                     this.textContent = 'Hide Churches List';
+                    
+                    // Open the panel content too if it's closed
+                    const content = document.getElementById('church-list-content');
+                    if (content.classList.contains('collapsed')) {
+                        togglePanel('church-list-content');
+                    }
                 } else {
                     panel.style.display = 'none';
                     panel.classList.remove('mobile-visible');
@@ -774,6 +1170,12 @@
             
             // Listen for window resize
             window.addEventListener('resize', checkMobile);
+            
+            // Initialize mobile features after page loads
+            window.addEventListener('load', function() {
+                checkMobile(); // Check initial state
+                setupMobileActions(); // Setup mobile action handlers
+            });
 
             var highlightLayer;
             function highlightFeature(e) {
@@ -791,7 +1193,7 @@
                 }
                 highlightLayer.openPopup();
             }
-            // Initialize map with global extent
+            // Initialize map with global extent and mobile optimizations
             var map = L.map('map', {
                 zoomControl: false,
                 maxZoom: 28,
@@ -800,7 +1202,12 @@
                 zoomAnimation: true,
                 fadeAnimation: true,
                 tap: true, // Enable tap for mobile
-                tapTolerance: 15 // Increase tap tolerance for mobile
+                tapTolerance: 15, // Increase tap tolerance for mobile
+                bounceAtZoomLimits: false, // Prevent bounce at zoom limits for smoother mobile experience
+                dragging: true, // Enable dragging
+                touchZoom: true, // Enable touch zoom
+                doubleClickZoom: true, // Enable double click zoom
+                keyboard: true // Enable keyboard navigation
             });
             
             // Set map bounds to world extent
@@ -841,19 +1248,38 @@
                 }
             }
             
-            // Add zoom control
+            // Add zoom control with mobile optimizations
             var zoomControl = L.control.zoom({
-                position: 'topleft'
+                position: 'topleft',
+                zoomInText: '+',
+                zoomOutText: '-',
+                zoomInTitle: 'Zoom in',
+                zoomOutTitle: 'Zoom out'
             }).addTo(map);
             
-            // Add locate control
-            L.control.locate({
-                locateOptions: {maxZoom: 19},
+            // Mobile-optimized locate control
+            var locateControl = L.control.locate({
+                locateOptions: {
+                    maxZoom: isMobile ? 16 : 19, // Lower max zoom on mobile
+                    enableHighAccuracy: true // Better accuracy
+                },
                 position: 'topleft',
                 icon: 'fa fa-location-arrow', // Clearer icon
                 iconLoading: 'fa fa-spinner fa-spin',
                 strings: {
-                    title: "Show my location" // More descriptive for accessibility
+                    title: "Show my location", // More descriptive for accessibility
+                    popup: "You are within {distance} {unit} from this point",
+                    outsideMapBoundsMsg: "You seem to be outside the map boundaries"
+                },
+                onLocationError: function(err) {
+                    // Mobile-friendly error handling
+                    alert("Location access was denied or unavailable. Please check your device settings.");
+                },
+                showPopup: false, // Don't show popup on mobile by default
+                markerStyle: {
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.8
                 }
             }).addTo(map);
             
@@ -908,7 +1334,7 @@
                 return '';
             }
             
-            // Function to create popups for church points
+            // Function to create popups for church points - Mobile optimized
             function pop_complete_parish_data_1(feature, layer) {
                 layer.on({
                     mouseout: function(e) {
@@ -925,10 +1351,15 @@
                             });
                         }
                     },
-                    mouseover: highlightFeature,
+                    mouseover: isMobile ? null : highlightFeature, // Only use mouseover on desktop
                     click: function(e) {
                         // Highlight corresponding item in the list
                         highlightListItem(feature.properties.id);
+                        
+                        // On mobile, just open popup on click (no highlight on mouseover)
+                        if (isMobile) {
+                            highlightFeature(e);
+                        }
                     }
                 });
                 
@@ -940,54 +1371,65 @@
                 const lat = feature.geometry.coordinates[1].toFixed(6);
                 const lng = feature.geometry.coordinates[0].toFixed(6);
                 
-                // Create mobile-friendly popup content
+                // Create mobile-friendly popup content with larger fonts for mobile
+                var fontSizeTitle = isMobile ? '16px' : '16px';
+                var fontSizeContent = isMobile ? '14px' : '14px';
+                
                 var popupContent = '<table style="width:100%;">\
                         <tr>\
-                            <td colspan="2" style="font-size:16px;"><strong>' + (feature.properties['Title'] !== null ? autolinker.link(feature.properties['Title'].toLocaleString()) : '') + '</strong></td>\
+                            <td colspan="2" style="font-size:' + fontSizeTitle + ';"><strong>' + 
+                            (feature.properties['Title'] !== null ? autolinker.link(feature.properties['Title'].toLocaleString()) : '') + '</strong></td>\
                         </tr>\
                         <tr>\
-                            <td style="font-size:14px;">Jurisdiction:</td>\
-                            <td style="font-size:14px;">' + (feature.properties['Jurisdiction'] !== null ? autolinker.link(feature.properties['Jurisdiction'].toLocaleString()) : '') + '</td>\
+                            <td style="font-size:' + fontSizeContent + ';">Jurisdiction:</td>\
+                            <td style="font-size:' + fontSizeContent + ';">' + 
+                            (feature.properties['Jurisdiction'] !== null ? autolinker.link(feature.properties['Jurisdiction'].toLocaleString()) : '') + '</td>\
                         </tr>\
                         <tr>\
-                            <td style="font-size:14px;">Type:</td>\
-                            <td style="font-size:14px;">' + (feature.properties['Type'] !== null ? autolinker.link(feature.properties['Type'].toLocaleString()) : '') + '</td>\
+                            <td style="font-size:' + fontSizeContent + ';">Type:</td>\
+                            <td style="font-size:' + fontSizeContent + ';">' + 
+                            (feature.properties['Type'] !== null ? autolinker.link(feature.properties['Type'].toLocaleString()) : '') + '</td>\
                         </tr>\
                         <tr>\
-                            <td style="font-size:14px;">Rite:</td>\
-                            <td style="font-size:14px;">' + (feature.properties['Rite'] !== null ? autolinker.link(feature.properties['Rite'].toLocaleString()) : '') + '</td>\
+                            <td style="font-size:' + fontSizeContent + ';">Rite:</td>\
+                            <td style="font-size:' + fontSizeContent + ';">' + 
+                            (feature.properties['Rite'] !== null ? autolinker.link(feature.properties['Rite'].toLocaleString()) : '') + '</td>\
                         </tr>\
                         <tr>\
-                            <td style="font-size:14px;">City:</td>\
-                            <td style="font-size:14px;">' + (city ? autolinker.link(city) : '') + '</td>\
+                            <td style="font-size:' + fontSizeContent + ';">City:</td>\
+                            <td style="font-size:' + fontSizeContent + ';">' + 
+                            (city ? autolinker.link(city) : '') + '</td>\
                         </tr>\
                         <tr>\
-                            <td style="font-size:14px;">Country:</td>\
-                            <td style="font-size:14px;">' + (feature.properties['Country'] !== null ? autolinker.link(feature.properties['Country'].toLocaleString()) : '') + '</td>\
+                            <td style="font-size:' + fontSizeContent + ';">Country:</td>\
+                            <td style="font-size:' + fontSizeContent + ';">' + 
+                            (feature.properties['Country'] !== null ? autolinker.link(feature.properties['Country'].toLocaleString()) : '') + '</td>\
                         </tr>\
                         <tr>\
-                            <td style="font-size:14px;">Coordinates:</td>\
-                            <td style="font-size:14px;">Lat: ' + lat + ', Lng: ' + lng + '</td>\
+                            <td style="font-size:' + fontSizeContent + ';">Coordinates:</td>\
+                            <td style="font-size:' + fontSizeContent + ';">Lat: ' + lat + ', Lng: ' + lng + '</td>\
                         </tr>\
                     </table>';
-                    var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+                var content = removeEmptyRowsFromPopupContent(popupContent, feature);
                 layer.on('popupopen', function(e) {
                     addClassToPopupIfMedia(content, e.popup);
                 });
                 
-                // Create mobile-optimized popup
+                // Create mobile-optimized popup with adjusted dimensions
+                const popupWidth = isMobile ? 280 : 400;
+                const popupHeight = isMobile ? 300 : 400;
                 const popupOptions = {
-                    maxWidth: isMobile ? 280 : 400,
-                    maxHeight: isMobile ? 300 : 400,
+                    maxWidth: popupWidth,
+                    maxHeight: popupHeight,
                     autoPanPaddingTopLeft: isMobile ? [10, 10] : [50, 50],
                     autoPanPaddingBottomRight: isMobile ? [10, 10] : [50, 50],
                     closeButton: true,
-                    closeOnClick: false // Prevent accidental closures on mobile
+                    closeOnClick: false, // Prevent accidental closures on mobile
+                    className: isMobile ? 'mobile-popup' : '' // Add class for mobile-specific CSS
                 };
                 
                 layer.bindPopup(content, popupOptions);
             }
-
             // Styling function for church points - Updated to use image icons with color filtering
             function style_complete_parish_data_1_0(feature) {
                 // Get the type and title info
@@ -1069,10 +1511,10 @@
                 });
             }
             
-            // Initialize markers cluster group with enhanced clustering
+            // Initialize markers cluster group with enhanced clustering - Mobile optimized
             var markers = L.markerClusterGroup({
                 showCoverageOnHover: false,
-                spiderfyDistanceMultiplier: 2,
+                spiderfyDistanceMultiplier: isMobile ? 2.5 : 2, // Increased for mobile
                 // Disable clustering at high zoom levels for better interaction
                 disableClusteringAtZoom: isMobile ? 16 : 18, // Lower clustering threshold on mobile
                 maxClusterRadius: isMobile ? 80 : 60, // Increased for mobile for better performance
@@ -1084,7 +1526,7 @@
                         console.log('Cluster rendering completed in ' + elapsed + 'ms');
                     }
                 },
-                // Custom cluster icon styling
+                // Custom cluster icon styling - Enlarged for mobile
                 iconCreateFunction: function(cluster) {
                     const count = cluster.getChildCount();
                     let size, className;
@@ -1100,27 +1542,42 @@
                         className = 'cluster-large';
                     }
                     
+                    // Larger size for mobile
+                    const iconSize = isMobile ? 46 : 40;
+                    
                     return L.divIcon({ 
                         html: '<div><span>' + count + '</span></div>', 
                         className: 'marker-cluster marker-cluster-' + size + ' ' + className,
-                        iconSize: new L.Point(isMobile ? 46 : 40, isMobile ? 46 : 40) // Larger on mobile
+                        iconSize: new L.Point(iconSize, iconSize)
                     });
                 },
                 animate: true,
                 animateAddingMarkers: true
             });
             
-            // Add search control
+            // Add search control - Mobile optimized
             var osmGeocoder = new L.Control.Geocoder({
                 collapsed: true,
                 position: 'topleft',
                 text: 'Search',
-                title: 'Testing'
+                title: 'Search for a location',
+                placeholder: 'Search...',
+                errorMessage: 'Nothing found.',
+                suggestMinLength: 3,
+                suggestTimeout: 250,
+                showResultIcons: true
             }).addTo(map);
             document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
             .className += ' fa fa-search';
             document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
             .title += 'Search for a place';
+            
+            // Mobile optimization for geocoder input
+            const geocoderInput = document.querySelector('.leaflet-control-geocoder-form input');
+            if (geocoderInput) {
+                geocoderInput.style.fontSize = '16px'; // Prevent iOS zoom
+                geocoderInput.style.padding = '8px'; // Larger touch target
+            }
             
             // Add layer control
             var overlaysTree = [
@@ -1188,11 +1645,15 @@
                 let matches;
                 
                 if (query === '') {
-                    matches = dataArray.slice(0, 100); // Show first 100 items
+                    // Show fewer items on mobile for better performance
+                    const limit = isMobile ? 50 : 100;
+                    matches = dataArray.slice(0, limit);
                 } else {
+                    // Limit results more aggressively on mobile
+                    const limit = isMobile ? 50 : 100;
                     matches = dataArray.filter(item => 
                         item && item.toLowerCase().includes(query)
-                    ).slice(0, 100); // Limit to 100 results
+                    ).slice(0, limit);
                 }
                 
                 // Add "All" option at the top
@@ -1224,15 +1685,29 @@
                     // Scroll to the item
                     const listContainer = document.getElementById('church-list');
                     listContainer.scrollTop = targetItem.offsetTop - listContainer.offsetTop;
+                    
+                    // On mobile, make sure church list panel is visible when an item is highlighted
+                    if (isMobile) {
+                        const panel = document.getElementById('church-list-panel');
+                        if (panel.style.display === 'none' || !panel.style.display) {
+                            // Don't automatically show the list on mobile as it may be disruptive
+                            // Just keep the item highlighted for when they choose to view the list
+                        }
+                    }
                 }
             }
             
-            // Function to populate church list
+            // Function to populate church list - Mobile optimized
             function populateChurchList(churches) {
                 const listElement = document.getElementById('church-list');
                 listElement.innerHTML = ''; // Clear existing items
                 
-                churches.forEach((feature, index) => {
+                // Limit number of churches to render for mobile performance
+                const renderLimit = isMobile ? 500 : 1000;
+                const limitedChurches = churches.slice(0, renderLimit);
+                
+                // Create church items
+                limitedChurches.forEach((feature, index) => {
                     // Assign a unique ID if not present
                     if (!feature.properties.id) {
                         feature.properties.id = index;
@@ -1277,7 +1752,7 @@
                         // Fly to location with clean animation
                         const lat = feature.geometry.coordinates[1];
                         const lng = feature.geometry.coordinates[0];
-                        const zoom = 16;
+                        const zoom = isMobile ? 15 : 16; // Slightly lower zoom on mobile for context
                         
                         // Fly to location
                         map.flyTo([lat, lng], zoom);
@@ -1303,24 +1778,51 @@
                     
                     listElement.appendChild(item);
                 });
-            }
-            // Filter the church list based on search input
-            document.getElementById('list-search').addEventListener('input', function() {
-                const query = this.value.toLowerCase();
                 
-                // Filter the list items
-                const items = document.querySelectorAll('.church-item');
-                items.forEach(item => {
-                    const title = item.querySelector('.church-title').textContent.toLowerCase();
-                    const details = item.querySelector('.church-details').textContent.toLowerCase();
+                // Add a note if we had to limit the list for performance
+                if (churches.length > renderLimit) {
+                    const note = document.createElement('div');
+                    note.style.padding = '10px';
+                    note.style.fontSize = '12px';
+                    note.style.color = '#666';
+                    note.style.textAlign = 'center';
+                    note.style.borderTop = '1px solid #ddd';
+                    note.textContent = `Showing ${renderLimit} of ${churches.length} churches. Apply filters to narrow results.`;
+                    listElement.appendChild(note);
+                }
+            }
+            
+            // Filter the church list based on search input - Debounced for mobile
+            function setupListSearch() {
+                const searchInput = document.getElementById('list-search');
+                let debounceTimeout;
+                
+                searchInput.addEventListener('input', function() {
+                    // Clear previous timeout
+                    clearTimeout(debounceTimeout);
                     
-                    if (title.includes(query) || details.includes(query)) {
-                        item.style.display = '';
-                    } else {
-                        item.style.display = 'none';
-                    }
+                    // Set debounce delay (longer on mobile for better performance)
+                    const debounceDelay = isMobile ? 300 : 200; 
+                    
+                    // Set new timeout
+                    debounceTimeout = setTimeout(() => {
+                        const query = this.value.toLowerCase();
+                        
+                        // Filter the list items
+                        const items = document.querySelectorAll('.church-item');
+                        items.forEach(item => {
+                            const title = item.querySelector('.church-title').textContent.toLowerCase();
+                            const details = item.querySelector('.church-details').textContent.toLowerCase();
+                            
+                            if (title.includes(query) || details.includes(query)) {
+                                item.style.display = '';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    }, debounceDelay);
                 });
-            });
+            }
             
             // Check if any filters are active
             function checkActiveFilters() {
@@ -1347,7 +1849,7 @@
                 return isFilterActive;
             }
             
-            // Function to apply filters and update map and list
+            // Function to apply filters and update map and list - Mobile optimized
             function applyFilters(manuallyChanged = false) {
                 // Get filter values
                 const titleFilter = document.getElementById('title-search').value.toLowerCase();
@@ -1369,6 +1871,9 @@
                 document.getElementById('filter-info').textContent = 'Filtering churches...';
                 
                 // Use setTimeout to allow UI to update before heavy processing
+                // Longer timeout for mobile to allow UI update
+                const processingDelay = isMobile ? 100 : 50;
+                
                 setTimeout(function() {
                     // Clear existing layers
                     markers.clearLayers();
@@ -1378,7 +1883,7 @@
                     
                     // If no filters active, only filter by current view bounds
                     if (!filtersActive) {
-                        // When no filters active, use the current map bounds to limit which churches to show
+                        // When no filters active, use the current map bounds
                         const bounds = map.getBounds();
                         baseCollection = baseCollection.filter(feature => {
                             const lat = feature.geometry.coordinates[1];
@@ -1419,10 +1924,16 @@
                     // Set ALL filtered churches as visible - don't limit the count
                     visibleChurches = filteredChurches;
                     
-                    // Create GeoJSON for the map
+                    // Create GeoJSON for the map with limits for mobile performance
+                    let displayChurches = visibleChurches;
+                    if (isMobile && !filtersActive && displayChurches.length > 1000) {
+                        // On mobile with no filters, limit the number to avoid performance issues
+                        displayChurches = displayChurches.slice(0, 1000);
+                    }
+                    
                     const tempGeoJson = {
                         "type": "FeatureCollection",
-                        "features": visibleChurches
+                        "features": displayChurches
                     };
                     
                     // Add markers in batch for better performance
@@ -1448,21 +1959,20 @@
                         }
                     }
                     
-                    // Update info text
-                    document.getElementById('filter-info').textContent = 
-                        `Showing ${visibleChurches.length} of ${filteredChurches.length} filtered churches ` +
-                        `(${allChurches.length} total)`;
+                    // Update info text, with mobile-friendly text
+                    const infoText = isMobile ? 
+                        `${visibleChurches.length} of ${allChurches.length} churches` :
+                        `Showing ${visibleChurches.length} of ${filteredChurches.length} filtered churches (${allChurches.length} total)`;
+                    
+                    document.getElementById('filter-info').textContent = infoText;
                     
                     // Update church list
-                    const listLimit = filtersActive ? 
-                        Math.min(visibleChurches.length, 1000) : // Show all filtered churches up to 1000
-                        Math.min(visibleChurches.length, 1000);  // Show all visible churches up to 1000
-                    populateChurchList(visibleChurches.slice(0, listLimit));
+                    populateChurchList(visibleChurches);
                     
-                }, 50); // Small delay to let the UI update
+                }, processingDelay); // Small delay to let the UI update
             }
             
-            // Function to zoom to filtered results
+            // Function to zoom to filtered results - Mobile optimized
             function zoomToFilteredResults() {
                 if (filteredChurches.length > 0) {
                     // Create a bounds object from the filtered churches
@@ -1476,9 +1986,13 @@
                     const bounds = L.latLngBounds(points);
                     
                     // Add padding to make sure all points are visible
+                    // More padding on mobile for better visibility
+                    const padding = isMobile ? [40, 40] : [50, 50];
+                    const maxZoom = isMobile ? 10 : 12; // Lower max zoom on mobile for better context
+                    
                     map.fitBounds(bounds, {
-                        padding: isMobile ? [30, 30] : [50, 50],
-                        maxZoom: isMobile ? 10 : 12 // Lower max zoom on mobile for better context
+                        padding: padding,
+                        maxZoom: maxZoom
                     });
                 }
             }
@@ -1506,6 +2020,13 @@
                 document.getElementById('zoom-to-filter').style.display = 'none';
                 
                 applyFilters();
+                
+                // On mobile, collapse the filter panel after reset
+                if (isMobile) {
+                    setTimeout(() => {
+                        togglePanel('filter-content');
+                    }, 300);
+                }
             }
             
             // Add event listener for the zoom-to-filter button
@@ -1581,7 +2102,7 @@
                 setupSearchableDropdown('rite-search', 'rite-suggestions', uniqueRites);
                 
                 // Add event listeners to filters (apply after delay to prevent excessive updates)
-                const debounceDelay = 500; // 500ms delay
+                const debounceDelay = isMobile ? 800 : 500; // Longer delay on mobile for better performance
                 
                 function debounce(func, wait) {
                     let timeout;
@@ -1608,27 +2129,52 @@
                 document.getElementById('type-search').addEventListener('input', debounceApplyFilters);
                 document.getElementById('rite-search').addEventListener('input', debounceApplyFilters);
                 
+                // Setup list search functionality
+                setupListSearch();
+                
                 // Reset filters button
                 document.getElementById('reset-filters').addEventListener('click', resetFilters);
                 
-                // Update visible churches when map moves
+                // Update visible churches when map moves, but with debouncing for mobile
+                const mapMoveDelay = isMobile ? 500 : 300; // Longer delay on mobile
+                
                 map.on('moveend', debounce(function() {
                     // Only update the map if no filters are active
                     if (!isFilterActive) {
                         applyFilters(false); // false indicates this was not a manual filter change
                     }
-                }, 300));
+                }, mapMoveDelay));
                 
                 // Initial update with visible churches
                 applyFilters();
                 
                 // Update church list based on current view
-                populateChurchList(getChurchesInVisibleBounds().slice(0, 1000)); 
+                populateChurchList(getChurchesInVisibleBounds().slice(0, isMobile ? 500 : 1000));
                 
                 // Show church list panel on desktop
                 if (window.innerWidth >= 768) {
                     document.getElementById('church-list-panel').style.display = 'block';
+                } else {
+                    // Ensure all panels start collapsed on mobile
+                    resetPanelStates();
                 }
+                
+                // Fix any mobile-specific issues after map is initialized
+                setTimeout(function() {
+                    if (isMobile) {
+                        // Sometimes the map controls need a nudge on mobile
+                        const mapControls = document.querySelectorAll('.leaflet-control-zoom a, .leaflet-control-layers-toggle');
+                        mapControls.forEach(control => {
+                            if (control.style) {
+                                control.style.fontSize = '18px';
+                                control.style.fontWeight = 'bold';
+                            }
+                        });
+                        
+                        // Ensure quick actions button is visible
+                        document.getElementById('mobile-quick-actions').style.display = 'flex';
+                    }
+                }, 1000);
             }
         </script>
         
