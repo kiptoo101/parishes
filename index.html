@@ -299,7 +299,6 @@
                 color: white;
                 font-weight: bold;
             }
-            
             /* Enhanced cluster colors with better visibility */
             .cluster-small div {
                 background-color: rgba(115, 170, 255, 0.9); /* Brighter blue */
@@ -344,19 +343,23 @@
                 color: #003366; /* Dark blue */
             }
             
-            /* Yellow tint filter for cathedral and monument icons */
-            .cathedral-icon-yellow {
-                filter: hue-rotate(45deg) saturate(1.3) brightness(1.2); /* This will make it yellow */
+            /* Updated color filters for church and cathedral icons */
+            .cathedral-icon-green {
+                filter: hue-rotate(90deg) saturate(1.3) brightness(1.2); /* This will make it green */
+            }
+            
+            .church-icon-white {
+                filter: brightness(2) saturate(0); /* This will make it white */
             }
             
             /* Updated legend icons with the new designs */
             #basilica-icon {
-                background-color: #FFD700; /* Gold */
+                background-color: #00FF00; /* Green */
                 clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); /* Star shape */
             }
             
             #church-icon {
-                background-color: #3CB371; /* Medium Sea Green */
+                background-color: #FFFFFF; /* White */
                 border-radius: 50%;
             }
             
@@ -372,7 +375,7 @@
                 left: 40%;
                 width: 20%;
                 height: 100%;
-                background-color: #FFD700; /* Gold */
+                background-color: #FFFFFF; /* White */
             }
             
             #cross-icon:after {
@@ -382,7 +385,7 @@
                 left: 0;
                 width: 100%;
                 height: 20%;
-                background-color: #FFD700; /* Gold */
+                background-color: #FFFFFF; /* White */
             }
             
             /* Dropdown suggestion */
@@ -511,6 +514,32 @@
                     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
                 }*/
             }
+            
+            /* Mobile popup styling to ensure visibility */
+            .mobile-popup .leaflet-popup-content-wrapper {
+                max-width: 280px;
+                font-size: 14px;
+            }
+            
+            .mobile-popup .leaflet-popup-content {
+                margin: 10px 12px;
+                line-height: 1.5;
+            }
+            
+            .mobile-popup .leaflet-popup-close-button {
+                padding: 6px 6px 0 0; /* Larger touch target */
+                font-size: 18px; /* Larger X button */
+            }
+            
+            /* Ensure popup is visible and not cut off on mobile */
+            .leaflet-popup {
+                margin-bottom: 0; /* Adjust position to ensure visibility */
+            }
+            
+            /* Fix for popup being cut off at the bottom on mobile */
+            .leaflet-popup-tip-container {
+                margin-top: -1px;
+            }
         </style>
     </head>
     <body>
@@ -593,379 +622,377 @@
             </div>
           </div>
         </div>
-        
         <!-- Church List Panel -->
         <div id="church-list-panel" class="panel">
-          <div class="panel-header" onclick="togglePanel('church-list-content')">
-            <h4>Churches List</h4>
-            <button class="toggle-btn" id="church-list-toggle">+</button>
-          </div>
-          
-          <div id="church-list-content" class="panel-content collapsed">
-            <div class="search-container">
-              <input type="text" id="list-search" class="search-input" placeholder="Filter list...">
-            </div>
-            <div id="church-list">
-              <!-- Church items will be dynamically added here -->
-            </div>
-            <button id="hide-church-list" class="mobile-btn" style="width: 100%; margin-top: 10px;">Hide List</button>
-          </div>
-        </div>
-        
-        <!-- Legend -->
-        <div id="legend" class="panel">
-          <div class="panel-header" onclick="togglePanel('legend-content')">
-            <h4>Legend</h4>
-            <button class="toggle-btn" id="legend-toggle">+</button>
-          </div>
-          
-          <!-- Updated legend section with actual images -->
-          <div id="legend-content" class="panel-content collapsed">
-            <div class="legend-item">
-              <img src="cathedral-icon.png" class="legend-image cathedral-icon-yellow" alt="Cathedral" />
-              <div class="legend-text">Basilica or Cathedral</div>
+            <div class="panel-header" onclick="togglePanel('church-list-content')">
+              <h4>Churches List</h4>
+              <button class="toggle-btn" id="church-list-toggle">+</button>
             </div>
             
-            <div class="legend-item">
-              <img src="church-icon.png" class="legend-image church-icon-green" alt="Church" />
-              <div class="legend-text">Church or Shrine</div>
-            </div>
-            
-            <div class="legend-item">
-              <img src="cathedral-icon.png" class="legend-image monument-icon cathedral-icon-yellow" alt="Monument" />
-              <div class="legend-text">Historic Church or Monument</div>
+            <div id="church-list-content" class="panel-content collapsed">
+              <div class="search-container">
+                <input type="text" id="list-search" class="search-input" placeholder="Filter list...">
+              </div>
+              <div id="church-list">
+                <!-- Church items will be dynamically added here -->
+              </div>
+              <button id="hide-church-list" class="mobile-btn" style="width: 100%; margin-top: 10px;">Hide List</button>
             </div>
           </div>
-        </div>
-        
-        <!-- CSS for the new legend -->
-        <style>
-          /* Legend image styling */
-          .legend-image {
-            width: 24px;
-            height: 24px;
-            margin-right: 10px;
-            object-fit: contain;
-          }
           
-          /* Apply a green filter to the church icon */
-          .church-icon-green {
-            filter: hue-rotate(100deg) saturate(1.5); /* This will make it green */
-          }
+          <!-- Legend -->
+          <div id="legend" class="panel">
+            <div class="panel-header" onclick="togglePanel('legend-content')">
+              <h4>Legend</h4>
+              <button class="toggle-btn" id="legend-toggle">+</button>
+            </div>
+            
+            <!-- Updated legend section with actual images and new colors -->
+            <div id="legend-content" class="panel-content collapsed">
+              <div class="legend-item">
+                <img src="cathedral-icon.png" class="legend-image cathedral-icon-green" alt="Basilica or Cathedral" />
+                <div class="legend-text">Basilica or Cathedral</div>
+              </div>
+              
+              <div class="legend-item">
+                <img src="church-icon.png" class="legend-image church-icon-white" alt="Church" />
+                <div class="legend-text">Church or Shrine</div>
+              </div>
+              
+              <div class="legend-item">
+                <img src="cathedral-icon.png" class="legend-image monument-icon cathedral-icon-green" alt="Monument" />
+                <div class="legend-text">Historic Church or Monument</div>
+              </div>
+            </div>
+          </div>
           
-          /* Apply yellow filter to cathedral icon */
-          .cathedral-icon-yellow {
-            filter: hue-rotate(45deg) saturate(1.3) brightness(1.2); /* This will make it yellow */
-          }
-          
-          /* Make the monument icon slightly smaller */
-          .monument-icon {
-            width: 20px;
-            height: 20px;
-            opacity: 0.85; /* Slightly more transparent to distinguish it */
-          }
-          
-          /* Updated legend item alignment */
-          .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-          }
-          
-          .legend-text {
-            flex: 1;
-            color: #003366; /* Dark blue */
-          }
-          
-          /* Mobile-optimized legend */
-          @media (max-width: 767px) {
-            .legend-item {
-              margin-bottom: 15px; /* More space between items */
+          <!-- CSS for the new legend -->
+          <style>
+            /* Legend image styling */
+            .legend-image {
+              width: 24px;
+              height: 24px;
+              margin-right: 10px;
+              object-fit: contain;
             }
             
-            .legend-image {
-              width: 28px; /* Larger icons */
-              height: 28px;
+            /* Apply white filter to the church icon */
+            .church-icon-white {
+              filter: brightness(2) saturate(0); /* This will make it white */
+            }
+            
+            /* Apply green filter to cathedral icon */
+            .cathedral-icon-green {
+              filter: hue-rotate(90deg) saturate(1.3) brightness(1.2); /* This will make it green */
+            }
+            
+            /* Make the monument icon slightly smaller */
+            .monument-icon {
+              width: 20px;
+              height: 20px;
+              opacity: 0.85; /* Slightly more transparent to distinguish it */
+            }
+            
+            /* Updated legend item alignment */
+            .legend-item {
+              display: flex;
+              align-items: center;
+              margin-bottom: 10px;
             }
             
             .legend-text {
-              font-size: 14px; /* Slightly larger text */
+              flex: 1;
+              color: #003366; /* Dark blue */
             }
-          }
-          
-          /* Quick access floating action button for mobile */
-          #mobile-quick-actions {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: #003366;
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-            z-index: 1000;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-          }
-          
-          #mobile-actions-menu {
-            position: fixed;
-            bottom: 80px;
-            left: 20px;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            width: 160px;
-          }
-          
-          .mobile-action-item {
-            padding: 12px;
-            text-align: left;
-            border: none;
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
-            cursor: pointer;
-            font-size: 14px;
-            color: #003366;
-            display: flex;
-            align-items: center;
-          }
-          
-          .mobile-action-item:last-child {
-            border-bottom: none;
-          }
-          
-          .mobile-action-item:hover, .mobile-action-item:active {
-            background: #f0f8ff;
-          }
-          
-          .mobile-action-icon {
-            margin-right: 8px;
-            font-size: 16px;
-            width: 20px;
-            text-align: center;
-          }
-          
-          @media (max-width: 767px) {
+            
+            /* Mobile-optimized legend */
+            @media (max-width: 767px) {
+              .legend-item {
+                margin-bottom: 15px; /* More space between items */
+              }
+              
+              .legend-image {
+                width: 28px; /* Larger icons */
+                height: 28px;
+              }
+              
+              .legend-text {
+                font-size: 14px; /* Slightly larger text */
+              }
+            }
+            
+            /* Quick access floating action button for mobile */
             #mobile-quick-actions {
+              position: fixed;
+              bottom: 20px;
+              left: 20px;
+              background: #003366;
+              color: white;
+              width: 50px;
+              height: 50px;
+              border-radius: 50%;
+              display: none;
+              justify-content: center;
+              align-items: center;
+              box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+              z-index: 1000;
+              border: none;
+              font-size: 24px;
+              cursor: pointer;
+            }
+            
+            #mobile-actions-menu {
+              position: fixed;
+              bottom: 80px;
+              left: 20px;
+              background: white;
+              border-radius: 5px;
+              box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+              z-index: 1000;
+              display: none;
+              flex-direction: column;
+              overflow: hidden;
+              width: 160px;
+            }
+            
+            .mobile-action-item {
+              padding: 12px;
+              text-align: left;
+              border: none;
+              background: white;
+              border-bottom: 1px solid #e0e0e0;
+              cursor: pointer;
+              font-size: 14px;
+              color: #003366;
               display: flex;
+              align-items: center;
             }
-          }
-        </style>
-        
-        <!-- Quick Action Button for Mobile -->
-        <button id="mobile-quick-actions">+</button>
-        <div id="mobile-actions-menu">
-          <button class="mobile-action-item" id="action-toggle-filter">
-            <span class="mobile-action-icon">🔍</span>Filters
-          </button>
-          <button class="mobile-action-item" id="action-toggle-list">
-            <span class="mobile-action-icon">📋</span>Churches
-          </button>
-          <button class="mobile-action-item" id="action-toggle-legend">
-            <span class="mobile-action-icon">🔎</span>Legend
-          </button>
-          <button class="mobile-action-item" id="action-my-location">
-            <span class="mobile-action-icon">📍</span>My Location
-          </button>
-        </div>
-        
-        <div id="map">
-        </div>
-        
-        <!-- Loading Indicator -->
-        <div id="loading-indicator">
-          <h3>Loading Catholic Churches Map</h3>
-          <div id="loading-progress-bar">
-            <div id="loading-progress-fill"></div>
+            
+            .mobile-action-item:last-child {
+              border-bottom: none;
+            }
+            
+            .mobile-action-item:hover, .mobile-action-item:active {
+              background: #f0f8ff;
+            }
+            
+            .mobile-action-icon {
+              margin-right: 8px;
+              font-size: 16px;
+              width: 20px;
+              text-align: center;
+            }
+            
+            @media (max-width: 767px) {
+              #mobile-quick-actions {
+                display: flex;
+              }
+            }
+          </style>
+          
+          <!-- Quick Action Button for Mobile -->
+          <button id="mobile-quick-actions">+</button>
+          <div id="mobile-actions-menu">
+            <button class="mobile-action-item" id="action-toggle-filter">
+              <span class="mobile-action-icon">🔍</span>Filters
+            </button>
+            <button class="mobile-action-item" id="action-toggle-list">
+              <span class="mobile-action-icon">📋</span>Churches
+            </button>
+            <button class="mobile-action-item" id="action-toggle-legend">
+              <span class="mobile-action-icon">🔎</span>Legend
+            </button>
+            <button class="mobile-action-item" id="action-my-location">
+              <span class="mobile-action-icon">📍</span>My Location
+            </button>
           </div>
-          <div id="loading-status">Loading data chunks...</div>
-        </div>
-        
-        <!-- Base Libraries -->
-        <script src="js/qgis2web_expressions.js"></script>
-        <script src="js/leaflet.js"></script>
-        <script src="js/L.Control.Layers.Tree.min.js"></script>
-        <script src="js/L.Control.Locate.min.js"></script>
-        <script src="js/leaflet-svg-shape-markers.min.js"></script>
-        <script src="js/leaflet.rotatedMarker.js"></script>
-        <script src="js/leaflet.pattern.js"></script>
-        <script src="js/leaflet-hash.js"></script>
-        <script src="js/Autolinker.min.js"></script>
-        <script src="js/rbush.min.js"></script>
-        <script src="js/labelgun.min.js"></script>
-        <script src="js/labels.js"></script>
-        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
-        <script src="js/leaflet.markercluster.js"></script>
-        <!-- Data Chunk Loading System -->
-        <script>
-            // Configuration for chunk loading
-            const totalChunks = 5;
-            let loadedChunks = 0;
-            
-            // Track loading progress
-            function updateLoadingProgress() {
-                loadedChunks++;
-                const percentage = Math.round((loadedChunks / totalChunks) * 100);
-                
-                // Update progress bar
-                document.getElementById('loading-progress-fill').style.width = percentage + '%';
-                document.getElementById('loading-status').textContent = 
-                    `${loadedChunks} of ${totalChunks} chunks loaded (${percentage}%)`;
-                
-                // When all chunks are loaded, hide the loading indicator after a short delay
-                if (loadedChunks >= totalChunks) {
-                    setTimeout(function() {
-                        document.getElementById('loading-indicator').style.display = 'none';
-                    }, 500);
-                }
-            }
-            
-            // Create script loading helper
-            function loadScript(url, callback) {
-                const script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.src = url;
-                
-                // When script is loaded, call the callback
-                script.onload = callback;
-                
-                // If there's an error, still update the counter but log the error
-                script.onerror = function() {
-                    console.error('Failed to load script:', url);
-                    callback();
-                };
-                
-                // Add the script to the document to start loading
-                document.head.appendChild(script);
-            }
-            
-            // Sequential script loading to ensure proper order
-            function loadDataChunks() {
-                // Load each chunk one by one
-                function loadNextChunk(index) {
-                    if (index > totalChunks) {
-                        return; // All chunks loaded
-                    }
-                    
-                    if (index <= 5) { // Regular data chunks
-                        loadScript(`data/json_complete_parish_data_1_part${index}.js`, function() {
-                            updateLoadingProgress();
-                            loadNextChunk(index + 1);
-                        });
-                    } else { // Load the loader script last
-                        loadScript('data/json_loader.js', function() {
-                            // The loader will call initializeMap() automatically
-                        });
-                    }
-                }
-                
-                // Start loading the first chunk
-                loadNextChunk(1);
-            }
-            
-            // Start loading data chunks when the page loads
-            window.addEventListener('load', loadDataChunks);
-        </script>
-
-        <!-- Core map functionality -->
-        <script>
-            // Variables to store filter data
-            let allChurches = [];
-            let filteredChurches = [];
-            let visibleChurches = [];
-            let uniqueCountries = new Set();
-            let uniqueJurisdictions = new Set();
-            let uniqueTypes = new Set();
-            let uniqueRites = new Set();
-            let uniqueTitles = new Set();
-            let uniqueCities = new Set();
-            let isFilterActive = false;
-            let hasAppliedFilters = false;
-            let isMobile = window.innerWidth < 768;
-            
-            // Mobile state tracking
-            let activeMobilePanel = null;
-            let quickActionsMenuOpen = false;
-
-            // Enhanced panel toggle functionality with mobile awareness
-            function togglePanel(contentId) {
-                var content = document.getElementById(contentId);
-                var toggleBtn = document.getElementById(contentId.split('-')[0] + '-toggle');
-                
-                // If on mobile, close any other open panel first
-                if (isMobile && content.style.display !== 'block') {
-                    closeAllPanelsExcept(contentId);
-                }
-                
-                if (content.classList.contains('collapsed')) {
-                    content.classList.remove('collapsed');
-                    content.style.display = 'block';
-                    toggleBtn.textContent = '−';
-                    
-                    // Track active mobile panel
-                    if (isMobile) {
-                        activeMobilePanel = contentId;
-                    }
-                } else {
-                    content.classList.add('collapsed');
-                    content.style.display = 'none';
-                    toggleBtn.textContent = '+';
-                    
-                    // Clear active panel reference
-                    if (isMobile && activeMobilePanel === contentId) {
-                        activeMobilePanel = null;
-                    }
-                }
-            }
-            
-            // Close all panels except one that's being opened
-            function closeAllPanelsExcept(exceptContentId) {
-                const panelContents = document.querySelectorAll('.panel-content');
-                panelContents.forEach(panel => {
-                    if (panel.id !== exceptContentId) {
-                        panel.classList.add('collapsed');
-                        panel.style.display = 'none';
-                        
-                        // Update toggle button text
-                        const panelId = panel.id.split('-')[0];
-                        const toggleBtn = document.getElementById(panelId + '-toggle');
-                        if (toggleBtn) {
-                            toggleBtn.textContent = '+';
-                        }
-                    }
-                });
-            }
-            
-            // Close all panels
-            function closeAllPanels() {
-                const panelContents = document.querySelectorAll('.panel-content');
-                panelContents.forEach(panel => {
-                    panel.classList.add('collapsed');
-                    panel.style.display = 'none';
-                    
-                    // Update toggle button text
-                    const panelId = panel.id.split('-')[0];
-                    const toggleBtn = document.getElementById(panelId + '-toggle');
-                    if (toggleBtn) {
-                        toggleBtn.textContent = '+';
-                    }
-                });
-                
-                // Clear active panel reference
-                activeMobilePanel = null;
-            }
-
-            // Mobile detection with enhanced functionality
+          
+          <div id="map">
+          </div>
+          
+          <!-- Loading Indicator -->
+          <div id="loading-indicator">
+            <h3>Loading Catholic Churches Map</h3>
+            <div id="loading-progress-bar">
+              <div id="loading-progress-fill"></div>
+            </div>
+            <div id="loading-status">Loading data chunks...</div>
+          </div>
+          
+          <!-- Base Libraries -->
+          <script src="js/qgis2web_expressions.js"></script>
+          <script src="js/leaflet.js"></script>
+          <script src="js/L.Control.Layers.Tree.min.js"></script>
+          <script src="js/L.Control.Locate.min.js"></script>
+          <script src="js/leaflet-svg-shape-markers.min.js"></script>
+          <script src="js/leaflet.rotatedMarker.js"></script>
+          <script src="js/leaflet.pattern.js"></script>
+          <script src="js/leaflet-hash.js"></script>
+          <script src="js/Autolinker.min.js"></script>
+          <script src="js/rbush.min.js"></script>
+          <script src="js/labelgun.min.js"></script>
+          <script src="js/labels.js"></script>
+          <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+          <script src="js/leaflet.markercluster.js"></script>
+          <!-- Data Chunk Loading System -->
+          <script>
+              // Configuration for chunk loading
+              const totalChunks = 5;
+              let loadedChunks = 0;
+              
+              // Track loading progress
+              function updateLoadingProgress() {
+                  loadedChunks++;
+                  const percentage = Math.round((loadedChunks / totalChunks) * 100);
+                  
+                  // Update progress bar
+                  document.getElementById('loading-progress-fill').style.width = percentage + '%';
+                  document.getElementById('loading-status').textContent = 
+                      `${loadedChunks} of ${totalChunks} chunks loaded (${percentage}%)`;
+                  
+                  // When all chunks are loaded, hide the loading indicator after a short delay
+                  if (loadedChunks >= totalChunks) {
+                      setTimeout(function() {
+                          document.getElementById('loading-indicator').style.display = 'none';
+                      }, 500);
+                  }
+              }
+              
+              // Create script loading helper
+              function loadScript(url, callback) {
+                  const script = document.createElement('script');
+                  script.type = 'text/javascript';
+                  script.src = url;
+                  
+                  // When script is loaded, call the callback
+                  script.onload = callback;
+                  
+                  // If there's an error, still update the counter but log the error
+                  script.onerror = function() {
+                      console.error('Failed to load script:', url);
+                      callback();
+                  };
+                  
+                  // Add the script to the document to start loading
+                  document.head.appendChild(script);
+              }
+              
+              // Sequential script loading to ensure proper order
+              function loadDataChunks() {
+                  // Load each chunk one by one
+                  function loadNextChunk(index) {
+                      if (index > totalChunks) {
+                          return; // All chunks loaded
+                      }
+                      
+                      if (index <= 5) { // Regular data chunks
+                          loadScript(`data/json_complete_parish_data_1_part${index}.js`, function() {
+                              updateLoadingProgress();
+                              loadNextChunk(index + 1);
+                          });
+                      } else { // Load the loader script last
+                          loadScript('data/json_loader.js', function() {
+                              // The loader will call initializeMap() automatically
+                          });
+                      }
+                  }
+                  
+                  // Start loading the first chunk
+                  loadNextChunk(1);
+              }
+              
+              // Start loading data chunks when the page loads
+              window.addEventListener('load', loadDataChunks);
+          </script>
+  
+          <!-- Core map functionality -->
+          <script>
+              // Variables to store filter data
+              let allChurches = [];
+              let filteredChurches = [];
+              let visibleChurches = [];
+              let uniqueCountries = new Set();
+              let uniqueJurisdictions = new Set();
+              let uniqueTypes = new Set();
+              let uniqueRites = new Set();
+              let uniqueTitles = new Set();
+              let uniqueCities = new Set();
+              let isFilterActive = false;
+              let hasAppliedFilters = false;
+              let isMobile = window.innerWidth < 768;
+              
+              // Mobile state tracking
+              let activeMobilePanel = null;
+              let quickActionsMenuOpen = false;
+  
+              // Enhanced panel toggle functionality with mobile awareness
+              function togglePanel(contentId) {
+                  var content = document.getElementById(contentId);
+                  var toggleBtn = document.getElementById(contentId.split('-')[0] + '-toggle');
+                  
+                  // If on mobile, close any other open panel first
+                  if (isMobile && content.style.display !== 'block') {
+                      closeAllPanelsExcept(contentId);
+                  }
+                  
+                  if (content.classList.contains('collapsed')) {
+                      content.classList.remove('collapsed');
+                      content.style.display = 'block';
+                      toggleBtn.textContent = '−';
+                      
+                      // Track active mobile panel
+                      if (isMobile) {
+                          activeMobilePanel = contentId;
+                      }
+                  } else {
+                      content.classList.add('collapsed');
+                      content.style.display = 'none';
+                      toggleBtn.textContent = '+';
+                      
+                      // Clear active panel reference
+                      if (isMobile && activeMobilePanel === contentId) {
+                          activeMobilePanel = null;
+                      }
+                  }
+              }
+              
+              // Close all panels except one that's being opened
+              function closeAllPanelsExcept(exceptContentId) {
+                  const panelContents = document.querySelectorAll('.panel-content');
+                  panelContents.forEach(panel => {
+                      if (panel.id !== exceptContentId) {
+                          panel.classList.add('collapsed');
+                          panel.style.display = 'none';
+                          
+                          // Update toggle button text
+                          const panelId = panel.id.split('-')[0];
+                          const toggleBtn = document.getElementById(panelId + '-toggle');
+                          if (toggleBtn) {
+                              toggleBtn.textContent = '+';
+                          }
+                      }
+                  });
+              }
+              
+              // Close all panels
+              function closeAllPanels() {
+                  const panelContents = document.querySelectorAll('.panel-content');
+                  panelContents.forEach(panel => {
+                      panel.classList.add('collapsed');
+                      panel.style.display = 'none';
+                      
+                      // Update toggle button text
+                      const panelId = panel.id.split('-')[0];
+                      const toggleBtn = document.getElementById(panelId + '-toggle');
+                      if (toggleBtn) {
+                          toggleBtn.textContent = '+';
+                      }
+                  });
+                  
+                  // Clear active panel reference
+                  activeMobilePanel = null;
+              }
+              // Mobile detection with enhanced functionality
             function checkMobile() {
                 const wasMobile = isMobile;
                 isMobile = window.innerWidth < 768;
@@ -1002,7 +1029,10 @@
                     
                     // Show mobile-specific controls
                     document.getElementById('mobile-toggle-list').style.display = 'block';
-                    document.getElementById('collapse-all-panels').style.display = 'block';
+                    // Document.getElementById('collapse-all-panels') may not exist
+                    if (document.getElementById('collapse-all-panels')) {
+                        document.getElementById('collapse-all-panels').style.display = 'block';
+                    }
                     document.getElementById('mobile-quick-actions').style.display = 'flex';
                 } else {
                     // On desktop, expand all panels
@@ -1023,7 +1053,9 @@
                     
                     // Hide mobile-specific controls
                     document.getElementById('mobile-toggle-list').style.display = 'none';
-                    document.getElementById('collapse-all-panels').style.display = 'none';
+                    if (document.getElementById('collapse-all-panels')) {
+                        document.getElementById('collapse-all-panels').style.display = 'none';
+                    }
                     document.getElementById('mobile-quick-actions').style.display = 'none';
                     document.getElementById('mobile-actions-menu').style.display = 'none';
                 }
@@ -1036,7 +1068,9 @@
                     // Hide church list panel by default on mobile
                     document.getElementById('church-list-panel').style.display = 'none';
                     document.getElementById('mobile-toggle-list').style.display = 'block';
-                    document.getElementById('collapse-all-panels').style.display = 'block';
+                    if (document.getElementById('collapse-all-panels')) {
+                        document.getElementById('collapse-all-panels').style.display = 'block';
+                    }
                     document.getElementById('mobile-quick-actions').style.display = 'flex';
                     
                     // Reduce cluster threshold for better mobile performance
@@ -1057,7 +1091,9 @@
                     // Show church list panel on desktop
                     document.getElementById('church-list-panel').style.display = 'block';
                     document.getElementById('mobile-toggle-list').style.display = 'none';
-                    document.getElementById('collapse-all-panels').style.display = 'none';
+                    if (document.getElementById('collapse-all-panels')) {
+                        document.getElementById('collapse-all-panels').style.display = 'none';
+                    }
                     document.getElementById('mobile-quick-actions').style.display = 'none';
                     document.getElementById('mobile-actions-menu').style.display = 'none';
                     
@@ -1136,8 +1172,10 @@
                     toggleQuickActionsMenu(); // Close menu after action
                 });
                 
-                // Collapse All Panels button
-                //document.getElementById('collapse-all-panels').addEventListener('click', closeAllPanels);
+                // Collapse All Panels button (if it exists)
+                if (document.getElementById('collapse-all-panels')) {
+                    document.getElementById('collapse-all-panels').addEventListener('click', closeAllPanels);
+                }
             }
             
             // Mobile toggle for church list panel
@@ -1320,7 +1358,6 @@
                     tilePane.style.filter = 'hue-rotate(210deg) brightness(1.1) saturate(1.2)';
                 }
             });
-            
             // Function to extract city from address
             function extractCity(address) {
                 if (!address) return '';
@@ -1356,10 +1393,14 @@
                         // Highlight corresponding item in the list
                         highlightListItem(feature.properties.id);
                         
-                        // On mobile, just open popup on click (no highlight on mouseover)
+                        // On mobile, manually trigger the popup
                         if (isMobile) {
                             highlightFeature(e);
+
+                        } else {
+                            layer.openPopup();
                         }
+                        
                     }
                 });
                 
@@ -1413,6 +1454,11 @@
                 var content = removeEmptyRowsFromPopupContent(popupContent, feature);
                 layer.on('popupopen', function(e) {
                     addClassToPopupIfMedia(content, e.popup);
+                    
+                    // Additional class for mobile
+                    if (isMobile) {
+                        e.popup._container.classList.add('mobile-popup');
+                    }
                 });
                 
                 // Create mobile-optimized popup with adjusted dimensions
@@ -1421,7 +1467,7 @@
                 const popupOptions = {
                     maxWidth: popupWidth,
                     maxHeight: popupHeight,
-                    autoPanPaddingTopLeft: isMobile ? [10, 10] : [50, 50],
+                    autoPanPaddingTopLeft: isMobile ? [10, 50] : [50, 50], // Increased vertical padding for mobile
                     autoPanPaddingBottomRight: isMobile ? [10, 10] : [50, 50],
                     closeButton: true,
                     closeOnClick: false, // Prevent accidental closures on mobile
@@ -1430,7 +1476,8 @@
                 
                 layer.bindPopup(content, popupOptions);
             }
-            // Styling function for church points - Updated to use image icons with color filtering
+            
+            // Styling function for church points - Updated to use image icons with new color filters
             function style_complete_parish_data_1_0(feature) {
                 // Get the type and title info
                 var type = feature.properties.Type || '';
@@ -1441,22 +1488,22 @@
                 let iconSize = [30, 30]; // Default size
                 let iconClass = ''; // For applying color filters
                 
-                // Updated styling for yellow cathedral/monuments and green churches
+                // Updated styling for green basilicas/cathedrals and white churches
                 if (type.toLowerCase().includes('basilica') || type.toLowerCase().includes('cathedral')) {
-                    // Cathedral icon with yellow tint
+                    // Cathedral icon with green tint
                     iconUrl = 'cathedral-icon.png';
                     iconSize = [30, 30];
-                    iconClass = 'cathedral-icon-yellow'; // Apply yellow filter
+                    iconClass = 'cathedral-icon-green'; // Apply green filter
                 } else if (type.toLowerCase().includes('monument')) {
-                    // Monument icon with yellow tint too
+                    // Monument icon with green tint too
                     iconUrl = 'cathedral-icon.png';
                     iconSize = [25, 25]; // Slightly smaller
-                    iconClass = 'cathedral-icon-yellow'; // Apply yellow filter
+                    iconClass = 'cathedral-icon-green'; // Apply green filter
                 } else {
-                    // Church icon with green tint
+                    // Church icon with white tint
                     iconUrl = 'church-icon.png';
                     iconSize = [30, 30];
-                    iconClass = 'church-icon-green'; // Apply green filter
+                    iconClass = 'church-icon-white'; // Apply white filter
                 }
                 
                 // Make Marian churches slightly larger
