@@ -125,6 +125,7 @@
                     max-width: 280px;
                     right: 5px;
                     top: 5px; /* Position closer to top */
+                    display: none; /* Hide filter panel on mobile by default */
                 }
                 
                 #legend {
@@ -132,6 +133,7 @@
                     right: 5px;
                     max-width: 160px;
                     z-index: 999; /* Ensure it's above other elements */
+                    display: none; /* Hide legend on mobile by default */
                 }
                 
                 .panel-content {
@@ -608,7 +610,6 @@
                   <div id="rite-suggestions" class="dropdown-list"></div>
                 </div>
               </div>
-              
               <button id="reset-filters" style="width: 100%; padding: 12px; background: #4682B4; color: white; border: 1px solid #3366cc; cursor: pointer; border-radius: 4px; font-size: 14px;">Reset Filters</button>
               
               <button id="zoom-to-filter">Zoom to Filtered Results</button>
@@ -831,147 +832,182 @@
           <script src="js/leaflet.markercluster.js"></script>
           <!-- Data Chunk Loading System -->
           <script>
-              // Configuration for chunk loading
-              const totalChunks = 5;
-              let loadedChunks = 0;
+            // Configuration for chunk loading
+            const totalChunks = 5;
+            let loadedChunks = 0;
+            
+            // Track loading progress
+            function updateLoadingProgress() {
+                loadedChunks++;
+                const percentage = Math.round((loadedChunks / totalChunks) * 100);
+                
+                // Update progress bar
+                document.getElementById('loading-progress-fill').style.width = percentage + '%';
+                document.getElementById('loading-status').textContent = 
+                    `${loadedChunks} of ${totalChunks} chunks loaded (${percentage}%)`;
+                
+                // When all chunks are loaded, hide the loading indicator after a short delay
+                if (loadedChunks >= totalChunks) {
+                    setTimeout(function() {
+                        document.getElementById('loading-indicator').style.display = 'none';
+                    }, 500);
+                }
+            }
+            
+            // Create script loading helper
+            function loadScript(url, callback) {
+                const script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = url;
+                
+                // When script is loaded, call the callback
+                script.onload = callback;
+                
+                // If there's an error, still update the counter but log the error
+                script.onerror = function() {
+                    console.error('Failed to load script:', url);
+                    callback();
+                };
+                
+                // Add the script to the document to start loading
+                document.head.appendChild(script);
+            }
+            
+            // Sequential script loading to ensure proper order
+            function loadDataChunks() {
+                // Load each chunk one by one
+                function loadNextChunk(index) {
+                    if (index > totalChunks) {
+                        return; // All chunks loaded
+                    }
+                    
+                    if (index <= 5) { // Regular data chunks
+                        loadScript(`data/json_complete_parish_data_1_part${index}.js`, function() {
+                            updateLoadingProgress();
+                            loadNextChunk(index + 1);
+                        });
+                    } else { // Load the loader script last
+                        loadScript('data/json_loader.js', function() {
+                            // The loader will call initializeMap() automatically
+                        });
+                    }
+                }
+                
+                // Start loading the first chunk
+                loadNextChunk(1);
+            }
+            
+            // Start loading data chunks when the page loads
+            window.addEventListener('load', loadDataChunks);
+        </script>
+
+        <!-- Core map functionality -->
+        <script>
+            // Variables to store filter data
+            let allChurches = [];
+            let filteredChurches = [];
+            let visibleChurches = [];
+            let uniqueCountries = new Set();
+            let uniqueJurisdictions = new Set();
+            let uniqueTypes = new Set();
+            let uniqueRites = new Set();
+            let uniqueTitles = new Set();
+            let uniqueCities = new Set();
+            let isFilterActive = false;
+            let hasAppliedFilters = false;
+            let isMobile = window.innerWidth < 768;
+            
+            // Mobile state tracking
+            let activeMobilePanel = null;
+            let quickActionsMenuOpen = false;
+
+            // Enhanced panel toggle functionality with mobile awareness
+            function togglePanel(contentId) {
+                var content = document.getElementById(contentId);
+                var toggleBtn = document.getElementById(contentId.split('-')[0] + '-toggle');
+                
+                // If on mobile, close any other open panel first
+                if (isMobile && content.style.display !== 'block') {
+                    closeAllPanelsExcept(contentId);
+                }
+                
+                if (content.classList.contains('collapsed')) {
+                    content.classList.remove('collapsed');
+                    content.style.display = 'block';
+                    toggleBtn.textContent = '−';
+                    
+                    // Track active mobile panel
+                    if (isMobile) {
+                        activeMobilePanel = contentId;
+                    }
+                } else {
+                    content.classList.add('collapsed');
+                    content.style.display = 'none';
+                    toggleBtn.textContent = '+';
+                    
+                    // Clear active panel reference
+                    if (isMobile && activeMobilePanel === contentId) {
+                        activeMobilePanel = null;
+                    }
+                }
+            }
+            
+            // Close all panels except one that's being opened
+            function closeAllPanelsExcept(exceptContentId) {
+                const panelContents = document.querySelectorAll('.panel-content');
+                panelContents.forEach(panel => {
+                    if (panel.id !== exceptContentId) {
+                        panel.classList.add('collapsed');
+                        panel.style.display = 'none';
+                        
+                        // Update toggle button text
+                        const panelId = panel.id.split('-')[0];
+                        const toggleBtn = document.getElementById(panelId + '-toggle');
+                        if (toggleBtn) {
+                            toggleBtn.textContent = '+';
+                        }
+                    }
+                });
+            }
+            
+            // Close all panels
+            function closeAllPanels() {
+                const panelContents = document.querySelectorAll('.panel-content');
+                panelContents.forEach(panel => {
+                    panel.classList.add('collapsed');
+                    panel.style.display = 'none';
+                    
+                    // Update toggle button text
+                    const panelId = panel.id.split('-')[0];
+                    const toggleBtn = document.getElementById(panelId + '-toggle');
+                    if (toggleBtn) {
+                        toggleBtn.textContent = '+';
+                    }
+                });
+                
+                // Clear active panel reference
+                activeMobilePanel = null;
+            }
+            // Mobile detection with enhanced functionality
+          function checkMobile() {
+              const wasMobile = isMobile;
+              isMobile = window.innerWidth < 768;
               
-              // Track loading progress
-              function updateLoadingProgress() {
-                  loadedChunks++;
-                  const percentage = Math.round((loadedChunks / totalChunks) * 100);
+              // Only adjust if the state changed
+              if (wasMobile !== isMobile) {
+                  adjustForMobile();
                   
-                  // Update progress bar
-                  document.getElementById('loading-progress-fill').style.width = percentage + '%';
-                  document.getElementById('loading-status').textContent = 
-                      `${loadedChunks} of ${totalChunks} chunks loaded (${percentage}%)`;
-                  
-                  // When all chunks are loaded, hide the loading indicator after a short delay
-                  if (loadedChunks >= totalChunks) {
-                      setTimeout(function() {
-                          document.getElementById('loading-indicator').style.display = 'none';
-                      }, 500);
-                  }
+                  // Reset panel states when switching between mobile and desktop
+                  resetPanelStates();
               }
+          }
+          
+          // Reset panels to appropriate state based on device
+          function resetPanelStates() {
+              const panelContents = document.querySelectorAll('.panel-content');
               
-              // Create script loading helper
-              function loadScript(url, callback) {
-                  const script = document.createElement('script');
-                  script.type = 'text/javascript';
-                  script.src = url;
-                  
-                  // When script is loaded, call the callback
-                  script.onload = callback;
-                  
-                  // If there's an error, still update the counter but log the error
-                  script.onerror = function() {
-                      console.error('Failed to load script:', url);
-                      callback();
-                  };
-                  
-                  // Add the script to the document to start loading
-                  document.head.appendChild(script);
-              }
-              
-              // Sequential script loading to ensure proper order
-              function loadDataChunks() {
-                  // Load each chunk one by one
-                  function loadNextChunk(index) {
-                      if (index > totalChunks) {
-                          return; // All chunks loaded
-                      }
-                      
-                      if (index <= 5) { // Regular data chunks
-                          loadScript(`data/json_complete_parish_data_1_part${index}.js`, function() {
-                              updateLoadingProgress();
-                              loadNextChunk(index + 1);
-                          });
-                      } else { // Load the loader script last
-                          loadScript('data/json_loader.js', function() {
-                              // The loader will call initializeMap() automatically
-                          });
-                      }
-                  }
-                  
-                  // Start loading the first chunk
-                  loadNextChunk(1);
-              }
-              
-              // Start loading data chunks when the page loads
-              window.addEventListener('load', loadDataChunks);
-          </script>
-  
-          <!-- Core map functionality -->
-          <script>
-              // Variables to store filter data
-              let allChurches = [];
-              let filteredChurches = [];
-              let visibleChurches = [];
-              let uniqueCountries = new Set();
-              let uniqueJurisdictions = new Set();
-              let uniqueTypes = new Set();
-              let uniqueRites = new Set();
-              let uniqueTitles = new Set();
-              let uniqueCities = new Set();
-              let isFilterActive = false;
-              let hasAppliedFilters = false;
-              let isMobile = window.innerWidth < 768;
-              
-              // Mobile state tracking
-              let activeMobilePanel = null;
-              let quickActionsMenuOpen = false;
-  
-              // Enhanced panel toggle functionality with mobile awareness
-              function togglePanel(contentId) {
-                  var content = document.getElementById(contentId);
-                  var toggleBtn = document.getElementById(contentId.split('-')[0] + '-toggle');
-                  
-                  // If on mobile, close any other open panel first
-                  if (isMobile && content.style.display !== 'block') {
-                      closeAllPanelsExcept(contentId);
-                  }
-                  
-                  if (content.classList.contains('collapsed')) {
-                      content.classList.remove('collapsed');
-                      content.style.display = 'block';
-                      toggleBtn.textContent = '−';
-                      
-                      // Track active mobile panel
-                      if (isMobile) {
-                          activeMobilePanel = contentId;
-                      }
-                  } else {
-                      content.classList.add('collapsed');
-                      content.style.display = 'none';
-                      toggleBtn.textContent = '+';
-                      
-                      // Clear active panel reference
-                      if (isMobile && activeMobilePanel === contentId) {
-                          activeMobilePanel = null;
-                      }
-                  }
-              }
-              
-              // Close all panels except one that's being opened
-              function closeAllPanelsExcept(exceptContentId) {
-                  const panelContents = document.querySelectorAll('.panel-content');
-                  panelContents.forEach(panel => {
-                      if (panel.id !== exceptContentId) {
-                          panel.classList.add('collapsed');
-                          panel.style.display = 'none';
-                          
-                          // Update toggle button text
-                          const panelId = panel.id.split('-')[0];
-                          const toggleBtn = document.getElementById(panelId + '-toggle');
-                          if (toggleBtn) {
-                              toggleBtn.textContent = '+';
-                          }
-                      }
-                  });
-              }
-              
-              // Close all panels
-              function closeAllPanels() {
-                  const panelContents = document.querySelectorAll('.panel-content');
+              if (isMobile) {
+                  // On mobile, collapse all panels
                   panelContents.forEach(panel => {
                       panel.classList.add('collapsed');
                       panel.style.display = 'none';
@@ -984,84 +1020,60 @@
                       }
                   });
                   
-                  // Clear active panel reference
-                  activeMobilePanel = null;
+                  // Hide church list panel
+                  document.getElementById('church-list-panel').style.display = 'none';
+                  
+                  // Hide filter and legend panels on mobile
+                  document.getElementById('filter-panel').style.display = 'none';
+                  document.getElementById('legend').style.display = 'none';
+                  
+                  // Show mobile-specific controls
+                  document.getElementById('mobile-toggle-list').style.display = 'block';
+                  // Document.getElementById('collapse-all-panels') may not exist
+                  if (document.getElementById('collapse-all-panels')) {
+                      document.getElementById('collapse-all-panels').style.display = 'block';
+                  }
+                  document.getElementById('mobile-quick-actions').style.display = 'flex';
+              } else {
+                  // On desktop, expand all panels
+                  panelContents.forEach(panel => {
+                      panel.classList.remove('collapsed');
+                      panel.style.display = 'block';
+                      
+                      // Update toggle button text
+                      const panelId = panel.id.split('-')[0];
+                      const toggleBtn = document.getElementById(panelId + '-toggle');
+                      if (toggleBtn) {
+                          toggleBtn.textContent = '−';
+                      }
+                  });
+                  
+                  // Show church list panel
+                  document.getElementById('church-list-panel').style.display = 'block';
+                  
+                  // Show filter and legend panels on desktop
+                  document.getElementById('filter-panel').style.display = 'block';
+                  document.getElementById('legend').style.display = 'block';
+                  
+                  // Hide mobile-specific controls
+                  document.getElementById('mobile-toggle-list').style.display = 'none';
+                  if (document.getElementById('collapse-all-panels')) {
+                      document.getElementById('collapse-all-panels').style.display = 'none';
+                  }
+                  document.getElementById('mobile-quick-actions').style.display = 'none';
+                  document.getElementById('mobile-actions-menu').style.display = 'none';
               }
-              // Mobile detection with enhanced functionality
-            function checkMobile() {
-                const wasMobile = isMobile;
-                isMobile = window.innerWidth < 768;
-                
-                // Only adjust if the state changed
-                if (wasMobile !== isMobile) {
-                    adjustForMobile();
-                    
-                    // Reset panel states when switching between mobile and desktop
-                    resetPanelStates();
-                }
-            }
-            
-            // Reset panels to appropriate state based on device
-            function resetPanelStates() {
-                const panelContents = document.querySelectorAll('.panel-content');
-                
-                if (isMobile) {
-                    // On mobile, collapse all panels
-                    panelContents.forEach(panel => {
-                        panel.classList.add('collapsed');
-                        panel.style.display = 'none';
-                        
-                        // Update toggle button text
-                        const panelId = panel.id.split('-')[0];
-                        const toggleBtn = document.getElementById(panelId + '-toggle');
-                        if (toggleBtn) {
-                            toggleBtn.textContent = '+';
-                        }
-                    });
-                    
-                    // Hide church list panel
-                    document.getElementById('church-list-panel').style.display = 'none';
-                    
-                    // Show mobile-specific controls
-                    document.getElementById('mobile-toggle-list').style.display = 'block';
-                    // Document.getElementById('collapse-all-panels') may not exist
-                    if (document.getElementById('collapse-all-panels')) {
-                        document.getElementById('collapse-all-panels').style.display = 'block';
-                    }
-                    document.getElementById('mobile-quick-actions').style.display = 'flex';
-                } else {
-                    // On desktop, expand all panels
-                    panelContents.forEach(panel => {
-                        panel.classList.remove('collapsed');
-                        panel.style.display = 'block';
-                        
-                        // Update toggle button text
-                        const panelId = panel.id.split('-')[0];
-                        const toggleBtn = document.getElementById(panelId + '-toggle');
-                        if (toggleBtn) {
-                            toggleBtn.textContent = '−';
-                        }
-                    });
-                    
-                    // Show church list panel
-                    document.getElementById('church-list-panel').style.display = 'block';
-                    
-                    // Hide mobile-specific controls
-                    document.getElementById('mobile-toggle-list').style.display = 'none';
-                    if (document.getElementById('collapse-all-panels')) {
-                        document.getElementById('collapse-all-panels').style.display = 'none';
-                    }
-                    document.getElementById('mobile-quick-actions').style.display = 'none';
-                    document.getElementById('mobile-actions-menu').style.display = 'none';
-                }
-            }
-            
-            // Adjust interface for mobile devices
-            function adjustForMobile() {
+          }
+          // Adjust interface for mobile devices
+          function adjustForMobile() {
                 // Update panel display based on device
                 if (isMobile) {
                     // Hide church list panel by default on mobile
                     document.getElementById('church-list-panel').style.display = 'none';
+                    // Hide filter and legend panels on mobile
+                    document.getElementById('filter-panel').style.display = 'none';
+                    document.getElementById('legend').style.display = 'none';
+                    
                     document.getElementById('mobile-toggle-list').style.display = 'block';
                     if (document.getElementById('collapse-all-panels')) {
                         document.getElementById('collapse-all-panels').style.display = 'block';
@@ -1085,6 +1097,10 @@
                 } else {
                     // Show church list panel on desktop
                     document.getElementById('church-list-panel').style.display = 'block';
+                    // Show filter and legend panels on desktop
+                    document.getElementById('filter-panel').style.display = 'block';
+                    document.getElementById('legend').style.display = 'block';
+                    
                     document.getElementById('mobile-toggle-list').style.display = 'none';
                     if (document.getElementById('collapse-all-panels')) {
                         document.getElementById('collapse-all-panels').style.display = 'none';
@@ -1137,6 +1153,12 @@
                 
                 // Action: Toggle Filter Panel
                 document.getElementById('action-toggle-filter').addEventListener('click', function() {
+                    // Make filter panel visible first if it's hidden
+                    const panel = document.getElementById('filter-panel');
+                    if (panel.style.display === 'none' || !panel.style.display) {
+                        panel.style.display = 'block';
+                    }
+                    
                     togglePanel('filter-content');
                     toggleQuickActionsMenu(); // Close menu after action
                 });
@@ -1156,6 +1178,12 @@
                 
                 // Action: Toggle Legend
                 document.getElementById('action-toggle-legend').addEventListener('click', function() {
+                    // Make legend panel visible first if it's hidden
+                    const panel = document.getElementById('legend');
+                    if (panel.style.display === 'none' || !panel.style.display) {
+                        panel.style.display = 'block';
+                    }
+                    
                     togglePanel('legend-content');
                     toggleQuickActionsMenu(); // Close menu after action
                 });
@@ -1235,7 +1263,6 @@
                     layer.openPopup();
                 }
             }
-            
             // Initialize map with global extent and mobile optimizations
             var map = L.map('map', {
                 zoomControl: false,
@@ -1374,7 +1401,6 @@
                 }
                 return '';
             }
-            
             // Function to create popups for church points - Mobile optimized
             function pop_complete_parish_data_1(feature, layer) {
                 // Extract city from address or determine by coordinates
@@ -1561,7 +1587,6 @@
                     });
                 });
             }
-            
             // Initialize markers cluster group with enhanced clustering - Mobile optimized
             var markers = L.markerClusterGroup({
                 showCoverageOnHover: false,
@@ -1923,7 +1948,6 @@
                 // Use setTimeout to allow UI to update before heavy processing
                 // Longer timeout for mobile to allow UI update
                 const processingDelay = isMobile ? 100 : 50;
-                
                 setTimeout(function() {
                     // Clear existing layers
                     markers.clearLayers();
@@ -2101,7 +2125,6 @@
                 // Call this on load and resize
                 ensureMapFillsViewport();
                 window.addEventListener('resize', ensureMapFillsViewport);
-                
                 // Process churches data to extract unique values for filters
                 allChurches = json_complete_parish_data_1.features;
                 
@@ -2199,10 +2222,18 @@
                 // Update church list based on current view
                 populateChurchList(getChurchesInVisibleBounds().slice(0, isMobile ? 500 : 1000));
                 
-                // Show church list panel on desktop
+                // Show church list panel on desktop, hide on mobile
                 if (window.innerWidth >= 768) {
                     document.getElementById('church-list-panel').style.display = 'block';
+                    // Show filter and legend panels on desktop
+                    document.getElementById('filter-panel').style.display = 'block';
+                    document.getElementById('legend').style.display = 'block';
                 } else {
+                    // Hide church list, filter, and legend panels on mobile
+                    document.getElementById('church-list-panel').style.display = 'none';
+                    document.getElementById('filter-panel').style.display = 'none';
+                    document.getElementById('legend').style.display = 'none';
+                    
                     // Ensure all panels start collapsed on mobile
                     resetPanelStates();
                 }
