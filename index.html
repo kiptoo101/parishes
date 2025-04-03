@@ -251,7 +251,6 @@
                 width: 0%;
                 transition: width 0.3s;
             }
-            
             /* Church list item */
             .church-item {
                 padding: 12px; /* Larger padding for better touch targets */
@@ -496,23 +495,6 @@
                 input[type="text"] {
                     font-size: 16px !important;
                 }
-                
-                /* Add collapse all button for mobile 
-                #collapse-all-panels {
-                    position: absolute;
-                    bottom: 70px;
-                    right: 10px;
-                    z-index: 1000;
-                    background: #003366;
-                    color: white;
-                    padding: 8px 12px;
-                    border-radius: 4px;
-                    display: block;
-                    border: none;
-                    cursor: pointer;
-                    font-size: 14px;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                }*/
             }
             
             /* Mobile popup styling to ensure visibility */
@@ -540,6 +522,24 @@
             .leaflet-popup-tip-container {
                 margin-top: -1px;
             }
+            
+            /* Fix for popup not appearing */
+            .leaflet-popup-content-wrapper {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+            
+            /* Make popups more visible with brighter background */
+            .leaflet-popup-content-wrapper {
+                background-color: rgba(255, 255, 255, 0.95) !important;
+                border: 2px solid rgba(0, 51, 102, 0.5) !important;
+            }
+            
+            /* Make sure popup tips are visible */
+            .leaflet-popup-tip {
+                background-color: rgba(255, 255, 255, 0.95) !important;
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3) !important;
+            }
         </style>
     </head>
     <body>
@@ -548,249 +548,244 @@
         
         <!-- Mobile Toggle for List Panel -->
         <button id="mobile-toggle-list" class="mobile-btn">Show Churches List</button>
-        
-        <!-- Collapse All Panels Button - New for mobile -->
-        <!--<button id="collapse-all-panels" class="mobile-btn">Collapse All Panels</button>-->
-        
         <!-- Filter Panel -->
         <div id="filter-panel" class="panel">
-          <div class="panel-header" onclick="togglePanel('filter-content')">
-            <h4>Filter Churches</h4>
-            <button class="toggle-btn" id="filter-toggle">+</button>
-          </div>
-          <div id="filter-content" class="panel-content collapsed">
-            <!-- Church Title Search -->
-            <div class="filter-section">
-              <label for="title-search">Church Name:</label>
-              <div class="search-container">
-                <input type="text" id="title-search" class="search-input" placeholder="Search by church name...">
-                <div id="title-suggestions" class="dropdown-list"></div>
-              </div>
+            <div class="panel-header" onclick="togglePanel('filter-content')">
+              <h4>Filter Churches</h4>
+              <button class="toggle-btn" id="filter-toggle">+</button>
             </div>
-            
-            <!-- City Search -->
-            <div class="filter-section">
-              <label for="city-search">City:</label>
-              <div class="search-container">
-                <input type="text" id="city-search" class="search-input" placeholder="Search city...">
-                <div id="city-suggestions" class="dropdown-list"></div>
-              </div>
-            </div>
-            
-            <!-- Country Search -->
-            <div class="filter-section">
-              <label for="country-search">Country:</label>
-              <div class="search-container">
-                <input type="text" id="country-search" class="search-input" placeholder="Search country...">
-                <div id="country-suggestions" class="dropdown-list"></div>
-              </div>
-            </div>
-            
-            <!-- Jurisdiction Search -->
-            <div class="filter-section">
-              <label for="jurisdiction-search">Jurisdiction:</label>
-              <div class="search-container">
-                <input type="text" id="jurisdiction-search" class="search-input" placeholder="Search jurisdiction...">
-                <div id="jurisdiction-suggestions" class="dropdown-list"></div>
-              </div>
-            </div>
-            
-            <!-- Type Search -->
-            <div class="filter-section">
-              <label for="type-search">Type:</label>
-              <div class="search-container">
-                <input type="text" id="type-search" class="search-input" placeholder="Search type...">
-                <div id="type-suggestions" class="dropdown-list"></div>
-              </div>
-            </div>
-            
-            <!-- Rite Search -->
-            <div class="filter-section">
-              <label for="rite-search">Rite:</label>
-              <div class="search-container">
-                <input type="text" id="rite-search" class="search-input" placeholder="Search rite...">
-                <div id="rite-suggestions" class="dropdown-list"></div>
-              </div>
-            </div>
-            
-            <button id="reset-filters" style="width: 100%; padding: 12px; background: #4682B4; color: white; border: 1px solid #3366cc; cursor: pointer; border-radius: 4px; font-size: 14px;">Reset Filters</button>
-            
-            <button id="zoom-to-filter">Zoom to Filtered Results</button>
-            
-            <div id="filter-info" style="margin-top: 10px; font-size: 12px; color: #003366;">
-              Loading churches...
-            </div>
-          </div>
-        </div>
-        <!-- Church List Panel -->
-        <div id="church-list-panel" class="panel">
-            <div class="panel-header" onclick="togglePanel('church-list-content')">
-              <h4>Churches List</h4>
-              <button class="toggle-btn" id="church-list-toggle">+</button>
-            </div>
-            
-            <div id="church-list-content" class="panel-content collapsed">
-              <div class="search-container">
-                <input type="text" id="list-search" class="search-input" placeholder="Filter list...">
-              </div>
-              <div id="church-list">
-                <!-- Church items will be dynamically added here -->
-              </div>
-              <button id="hide-church-list" class="mobile-btn" style="width: 100%; margin-top: 10px;">Hide List</button>
-            </div>
-          </div>
-          
-          <!-- Legend -->
-          <div id="legend" class="panel">
-            <div class="panel-header" onclick="togglePanel('legend-content')">
-              <h4>Legend</h4>
-              <button class="toggle-btn" id="legend-toggle">+</button>
-            </div>
-            
-            <!-- Updated legend section with actual images and new colors -->
-            <div id="legend-content" class="panel-content collapsed">
-              <div class="legend-item">
-                <img src="cathedral-icon.png" class="legend-image cathedral-icon-green" alt="Basilica or Cathedral" />
-                <div class="legend-text">Basilica or Cathedral</div>
+            <div id="filter-content" class="panel-content collapsed">
+              <!-- Church Title Search -->
+              <div class="filter-section">
+                <label for="title-search">Church Name:</label>
+                <div class="search-container">
+                  <input type="text" id="title-search" class="search-input" placeholder="Search by church name...">
+                  <div id="title-suggestions" class="dropdown-list"></div>
+                </div>
               </div>
               
-              <div class="legend-item">
-                <img src="church-icon.png" class="legend-image church-icon-white" alt="Church" />
-                <div class="legend-text">Church or Shrine</div>
+              <!-- City Search -->
+              <div class="filter-section">
+                <label for="city-search">City:</label>
+                <div class="search-container">
+                  <input type="text" id="city-search" class="search-input" placeholder="Search city...">
+                  <div id="city-suggestions" class="dropdown-list"></div>
+                </div>
               </div>
               
-              <div class="legend-item">
-                <img src="cathedral-icon.png" class="legend-image monument-icon cathedral-icon-green" alt="Monument" />
-                <div class="legend-text">Historic Church or Monument</div>
+              <!-- Country Search -->
+              <div class="filter-section">
+                <label for="country-search">Country:</label>
+                <div class="search-container">
+                  <input type="text" id="country-search" class="search-input" placeholder="Search country...">
+                  <div id="country-suggestions" class="dropdown-list"></div>
+                </div>
+              </div>
+              
+              <!-- Jurisdiction Search -->
+              <div class="filter-section">
+                <label for="jurisdiction-search">Jurisdiction:</label>
+                <div class="search-container">
+                  <input type="text" id="jurisdiction-search" class="search-input" placeholder="Search jurisdiction...">
+                  <div id="jurisdiction-suggestions" class="dropdown-list"></div>
+                </div>
+              </div>
+              
+              <!-- Type Search -->
+              <div class="filter-section">
+                <label for="type-search">Type:</label>
+                <div class="search-container">
+                  <input type="text" id="type-search" class="search-input" placeholder="Search type...">
+                  <div id="type-suggestions" class="dropdown-list"></div>
+                </div>
+              </div>
+              
+              <!-- Rite Search -->
+              <div class="filter-section">
+                <label for="rite-search">Rite:</label>
+                <div class="search-container">
+                  <input type="text" id="rite-search" class="search-input" placeholder="Search rite...">
+                  <div id="rite-suggestions" class="dropdown-list"></div>
+                </div>
+              </div>
+              
+              <button id="reset-filters" style="width: 100%; padding: 12px; background: #4682B4; color: white; border: 1px solid #3366cc; cursor: pointer; border-radius: 4px; font-size: 14px;">Reset Filters</button>
+              
+              <button id="zoom-to-filter">Zoom to Filtered Results</button>
+              
+              <div id="filter-info" style="margin-top: 10px; font-size: 12px; color: #003366;">
+                Loading churches...
               </div>
             </div>
           </div>
-          
-          <!-- CSS for the new legend -->
-          <style>
-            /* Legend image styling */
-            .legend-image {
-              width: 24px;
-              height: 24px;
-              margin-right: 10px;
-              object-fit: contain;
-            }
+          <!-- Church List Panel -->
+          <div id="church-list-panel" class="panel">
+              <div class="panel-header" onclick="togglePanel('church-list-content')">
+                <h4>Churches List</h4>
+                <button class="toggle-btn" id="church-list-toggle">+</button>
+              </div>
+              
+              <div id="church-list-content" class="panel-content collapsed">
+                <div class="search-container">
+                  <input type="text" id="list-search" class="search-input" placeholder="Filter list...">
+                </div>
+                <div id="church-list">
+                  <!-- Church items will be dynamically added here -->
+                </div>
+                <button id="hide-church-list" class="mobile-btn" style="width: 100%; margin-top: 10px;">Hide List</button>
+              </div>
+            </div>
             
-            /* Apply white filter to the church icon */
-            .church-icon-white {
-              filter: brightness(2) saturate(0); /* This will make it white */
-            }
+            <!-- Legend -->
+            <div id="legend" class="panel">
+              <div class="panel-header" onclick="togglePanel('legend-content')">
+                <h4>Legend</h4>
+                <button class="toggle-btn" id="legend-toggle">+</button>
+              </div>
+              
+              <!-- Updated legend section with actual images and new colors -->
+              <div id="legend-content" class="panel-content collapsed">
+                <div class="legend-item">
+                  <img src="cathedral-icon.png" class="legend-image cathedral-icon-green" alt="Basilica or Cathedral" />
+                  <div class="legend-text">Basilica or Cathedral</div>
+                </div>
+                
+                <div class="legend-item">
+                  <img src="church-icon.png" class="legend-image church-icon-white" alt="Church" />
+                  <div class="legend-text">Church or Shrine</div>
+                </div>
+                
+                <div class="legend-item">
+                  <img src="cathedral-icon.png" class="legend-image monument-icon cathedral-icon-green" alt="Monument" />
+                  <div class="legend-text">Historic Church or Monument</div>
+                </div>
+              </div>
+            </div>
             
-            /* Apply green filter to cathedral icon */
-            .cathedral-icon-green {
-              filter: hue-rotate(90deg) saturate(1.3) brightness(1.2); /* This will make it green */
-            }
-            
-            /* Make the monument icon slightly smaller */
-            .monument-icon {
-              width: 20px;
-              height: 20px;
-              opacity: 0.85; /* Slightly more transparent to distinguish it */
-            }
-            
-            /* Updated legend item alignment */
-            .legend-item {
-              display: flex;
-              align-items: center;
-              margin-bottom: 10px;
-            }
-            
-            .legend-text {
-              flex: 1;
-              color: #003366; /* Dark blue */
-            }
-            
-            /* Mobile-optimized legend */
-            @media (max-width: 767px) {
-              .legend-item {
-                margin-bottom: 15px; /* More space between items */
+            <!-- CSS for the new legend -->
+            <style>
+              /* Legend image styling */
+              .legend-image {
+                width: 24px;
+                height: 24px;
+                margin-right: 10px;
+                object-fit: contain;
               }
               
-              .legend-image {
-                width: 28px; /* Larger icons */
-                height: 28px;
+              /* Apply white filter to the church icon */
+              .church-icon-white {
+                filter: brightness(2) saturate(0); /* This will make it white */
+              }
+              
+              /* Apply green filter to cathedral icon */
+              .cathedral-icon-green {
+                filter: hue-rotate(90deg) saturate(1.3) brightness(1.2); /* This will make it green */
+              }
+              
+              /* Make the monument icon slightly smaller */
+              .monument-icon {
+                width: 20px;
+                height: 20px;
+                opacity: 0.85; /* Slightly more transparent to distinguish it */
+              }
+              
+              /* Updated legend item alignment */
+              .legend-item {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
               }
               
               .legend-text {
-                font-size: 14px; /* Slightly larger text */
+                flex: 1;
+                color: #003366; /* Dark blue */
               }
-            }
-            
-            /* Quick access floating action button for mobile */
-            #mobile-quick-actions {
-              position: fixed;
-              bottom: 20px;
-              left: 20px;
-              background: #003366;
-              color: white;
-              width: 50px;
-              height: 50px;
-              border-radius: 50%;
-              display: none;
-              justify-content: center;
-              align-items: center;
-              box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-              z-index: 1000;
-              border: none;
-              font-size: 24px;
-              cursor: pointer;
-            }
-            
-            #mobile-actions-menu {
-              position: fixed;
-              bottom: 80px;
-              left: 20px;
-              background: white;
-              border-radius: 5px;
-              box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-              z-index: 1000;
-              display: none;
-              flex-direction: column;
-              overflow: hidden;
-              width: 160px;
-            }
-            
-            .mobile-action-item {
-              padding: 12px;
-              text-align: left;
-              border: none;
-              background: white;
-              border-bottom: 1px solid #e0e0e0;
-              cursor: pointer;
-              font-size: 14px;
-              color: #003366;
-              display: flex;
-              align-items: center;
-            }
-            
-            .mobile-action-item:last-child {
-              border-bottom: none;
-            }
-            
-            .mobile-action-item:hover, .mobile-action-item:active {
-              background: #f0f8ff;
-            }
-            
-            .mobile-action-icon {
-              margin-right: 8px;
-              font-size: 16px;
-              width: 20px;
-              text-align: center;
-            }
-            
-            @media (max-width: 767px) {
+              
+              /* Mobile-optimized legend */
+              @media (max-width: 767px) {
+                .legend-item {
+                  margin-bottom: 15px; /* More space between items */
+                }
+                
+                .legend-image {
+                  width: 28px; /* Larger icons */
+                  height: 28px;
+                }
+                
+                .legend-text {
+                  font-size: 14px; /* Slightly larger text */
+                }
+              }
+              
+              /* Quick access floating action button for mobile */
               #mobile-quick-actions {
-                display: flex;
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background: #003366;
+                color: white;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                display: none;
+                justify-content: center;
+                align-items: center;
+                box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+                z-index: 1000;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
               }
-            }
-          </style>
-          
-          <!-- Quick Action Button for Mobile -->
+              
+              #mobile-actions-menu {
+                position: fixed;
+                bottom: 80px;
+                left: 20px;
+                background: white;
+                border-radius: 5px;
+                box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+                z-index: 1000;
+                display: none;
+                flex-direction: column;
+                overflow: hidden;
+                width: 160px;
+              }
+              
+              .mobile-action-item {
+                padding: 12px;
+                text-align: left;
+                border: none;
+                background: white;
+                border-bottom: 1px solid #e0e0e0;
+                cursor: pointer;
+                font-size: 14px;
+                color: #003366;
+                display: flex;
+                align-items: center;
+              }
+              
+              .mobile-action-item:last-child {
+                border-bottom: none;
+              }
+              
+              .mobile-action-item:hover, .mobile-action-item:active {
+                background: #f0f8ff;
+              }
+              
+              .mobile-action-icon {
+                margin-right: 8px;
+                font-size: 16px;
+                width: 20px;
+                text-align: center;
+              }
+              
+              @media (max-width: 767px) {
+                #mobile-quick-actions {
+                  display: flex;
+                }
+              }
+            </style>
+            <!-- Quick Action Button for Mobile -->
           <button id="mobile-quick-actions">+</button>
           <div id="mobile-actions-menu">
             <button class="mobile-action-item" id="action-toggle-filter">
@@ -1197,7 +1192,6 @@
                     this.textContent = 'Show Churches List';
                 }
             });
-            
             // Close church list on mobile
             document.getElementById('hide-church-list').addEventListener('click', function() {
                 if (isMobile) {
@@ -1215,22 +1209,33 @@
                 setupMobileActions(); // Setup mobile action handlers
             });
 
-            var highlightLayer;
+            // Fixed highlightFeature function to properly show popup
             function highlightFeature(e) {
-                highlightLayer = e.target;
-
-                if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
-                  highlightLayer.setStyle({
-                    color: '#3388ff', // Blue highlight
-                  });
-                } else {
-                  highlightLayer.setStyle({
-                    fillColor: '#3388ff', // Blue highlight
-                    fillOpacity: 1
-                  });
+                const layer = e.target;
+                
+                if (layer.feature && layer.feature.geometry) {
+                    if (layer.feature.geometry.type === 'LineString' || layer.feature.geometry.type === 'MultiLineString') {
+                        layer.setStyle({
+                            color: '#3388ff', // Blue highlight
+                            weight: 5,
+                            opacity: 0.8
+                        });
+                    } else {
+                        // For points, we change the icon scale or opacity if needed
+                        const icon = layer.getIcon();
+                        if (icon) {
+                            // You could modify the icon here if needed
+                            // For now we'll just ensure the popup opens
+                        }
+                    }
                 }
-                highlightLayer.openPopup();
+                
+                // Always open the popup regardless of geometry type
+                if (layer.getPopup()) {
+                    layer.openPopup();
+                }
             }
+            
             // Initialize map with global extent and mobile optimizations
             var map = L.map('map', {
                 zoomControl: false,
@@ -1329,7 +1334,6 @@
 
             // Set the background color - Keep it simple
             document.querySelector('.leaflet-container').style.backgroundColor = '#001429';
-            
             // Add Mapbox blue themed base map layer - SIMPLIFIED APPROACH
             const mapboxAccessToken = 'pk.eyJ1Ijoia2lwdG9vMDEiLCJhIjoiY202cGlvdnRhMDRxZDJrc2JpbWprN25kaCJ9.YlAHNXzq6IJ8nfoHo0gjTQ';
             
@@ -1373,37 +1377,6 @@
             
             // Function to create popups for church points - Mobile optimized
             function pop_complete_parish_data_1(feature, layer) {
-                layer.on({
-                    mouseout: function(e) {
-                        for (var i in e.target._eventParents) {
-                            if (typeof e.target._eventParents[i].resetStyle === 'function') {
-                                e.target._eventParents[i].resetStyle(e.target);
-                            }
-                        }
-                        if (typeof layer.closePopup == 'function') {
-                            layer.closePopup();
-                        } else {
-                            layer.eachLayer(function(feature){
-                                feature.closePopup()
-                            });
-                        }
-                    },
-                    mouseover: isMobile ? null : highlightFeature, // Only use mouseover on desktop
-                    click: function(e) {
-                        // Highlight corresponding item in the list
-                        highlightListItem(feature.properties.id);
-                        
-                        // On mobile, manually trigger the popup
-                        if (isMobile) {
-                            highlightFeature(e);
-
-                        } else {
-                            layer.openPopup();
-                        }
-                        
-                    }
-                });
-                
                 // Extract city from address or determine by coordinates
                 const city = extractCity(feature.properties.Address);
                 feature.properties.City = city; // Store city for filtering
@@ -1452,14 +1425,6 @@
                         </tr>\
                     </table>';
                 var content = removeEmptyRowsFromPopupContent(popupContent, feature);
-                layer.on('popupopen', function(e) {
-                    addClassToPopupIfMedia(content, e.popup);
-                    
-                    // Additional class for mobile
-                    if (isMobile) {
-                        e.popup._container.classList.add('mobile-popup');
-                    }
-                });
                 
                 // Create mobile-optimized popup with adjusted dimensions
                 const popupWidth = isMobile ? 280 : 400;
@@ -1474,7 +1439,47 @@
                     className: isMobile ? 'mobile-popup' : '' // Add class for mobile-specific CSS
                 };
                 
+                // Bind popup to layer
                 layer.bindPopup(content, popupOptions);
+                
+                // Setup popup open event to handle additional formatting
+                layer.on('popupopen', function(e) {
+                    addClassToPopupIfMedia(content, e.popup);
+                    
+                    // Additional class for mobile
+                    if (isMobile) {
+                        e.popup._container.classList.add('mobile-popup');
+                    }
+                });
+                
+                // Setup event handlers for the layer
+                layer.on({
+                    // Only use mouseover on desktop
+                    mouseover: isMobile ? null : function(e) {
+                        layer.openPopup();
+                    },
+                    
+                    mouseout: function(e) {
+                        if (!isMobile) {
+                            if (typeof layer.closePopup == 'function') {
+                                layer.closePopup();
+                            } else {
+                                layer.eachLayer(function(feature){
+                                    feature.closePopup();
+                                });
+                            }
+                        }
+                    },
+                    
+                    // Most important part: Handle click events properly
+                    click: function(e) {
+                        // Highlight corresponding item in the list
+                        highlightListItem(feature.properties.id);
+                        
+                        // Always open the popup on click for both mobile and desktop
+                        layer.openPopup();
+                    }
+                });
             }
             
             // Styling function for church points - Updated to use image icons with new color filters
@@ -1527,7 +1532,6 @@
                 
                 return churchIcon;
             }
-            
             // Create pane for church layer
             map.createPane('pane_complete_parish_data_1');
             map.getPane('pane_complete_parish_data_1').style.zIndex = 401;
@@ -1743,7 +1747,6 @@
                     }
                 }
             }
-            
             // Function to populate church list - Mobile optimized
             function populateChurchList(churches) {
                 const listElement = document.getElementById('church-list');
@@ -1967,7 +1970,6 @@
                         // Return true if all filters match
                         return titleMatch && cityMatch && countryMatch && jurisdictionMatch && typeMatch && riteMatch;
                     });
-                    
                     // Set ALL filtered churches as visible - don't limit the count
                     visibleChurches = filteredChurches;
                     
@@ -2167,7 +2169,6 @@
                 const debounceApplyFilters = debounce(function() {
                     applyFilters(true); // true indicates filter was manually changed
                 }, debounceDelay);
-                
                 // Attach event listeners to input fields
                 document.getElementById('title-search').addEventListener('input', debounceApplyFilters);
                 document.getElementById('city-search').addEventListener('input', debounceApplyFilters);
@@ -2222,7 +2223,37 @@
                         document.getElementById('mobile-quick-actions').style.display = 'flex';
                     }
                 }, 1000);
+                
+                // One-time check for popup functionality 5 seconds after loading
+                setTimeout(function() {
+                    // Try to open a random popup to ensure they're working
+                    const randomIndex = Math.floor(Math.random() * Math.min(allChurches.length, 10));
+                    markers.eachLayer(function(layer) {
+                        if (layer.feature && layer.feature.properties.id === randomIndex) {
+                            console.log("Testing popup functionality for marker: " + randomIndex);
+                            layer.openPopup();
+                            setTimeout(() => layer.closePopup(), 500); // Close after a moment
+                        }
+                    });
+                }, 5000);
             }
+            
+            // Debug function to check popup functionality
+            window.debugPopups = function() {
+                console.log("Running popup debug...");
+                markers.eachLayer(function(layer) {
+                    console.log("Layer found:", layer);
+                    if (layer.getPopup) {
+                        const popup = layer.getPopup();
+                        console.log("Popup exists:", !!popup);
+                        if (popup) {
+                            console.log("Popup content:", popup.getContent());
+                        }
+                    } else {
+                        console.log("Layer has no getPopup method");
+                    }
+                });
+            };
         </script>
         
         <!-- Include chunked data files -->
