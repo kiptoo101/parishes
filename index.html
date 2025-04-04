@@ -1261,7 +1261,7 @@
                     panelStates['legend'].contentExpanded = false;
                     
                     // Show mobile-specific controls
-                    document.getElementById('mobile-toggle-list').style.display = 'block';
+                    document.getElementById('mobile-toggle-list').style.display = 'none';
                     document.getElementById('mobile-quick-actions').style.display = 'flex';
                 } else {
                     // On desktop, expand all panels
@@ -1317,7 +1317,7 @@
                     document.getElementById('legend').style.display = 'none';
                     panelStates['legend'].visible = false;
                     
-                    document.getElementById('mobile-toggle-list').style.display = 'block';
+                    document.getElementById('mobile-toggle-list').style.display = 'none';
                     document.getElementById('mobile-quick-actions').style.display = 'flex';
                     
                     // Reduce cluster threshold for better mobile performance
@@ -1540,7 +1540,7 @@
                 
                 if (panel.style.display === 'none' || !panel.style.display) {
                     // Show panel
-                    panel.style.display = 'block';
+                    panel.style.display = 'none';
                     panel.classList.add('mobile-visible');
                     this.textContent = 'Hide Churches List';
                     
