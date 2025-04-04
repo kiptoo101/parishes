@@ -107,8 +107,8 @@
                     display: block;
                 }
                 
-                .panel-content {
-                    display: block !important; /* Always show on desktop */
+                #church-list-content {
+                    display: block; /* Always show on desktop */
                 }
             }
             
@@ -1056,10 +1056,12 @@
                   closeAllPanelsExcept(contentId);
               }
               
-              // First ensure the panel is visible
-              if (panelId && document.getElementById(panelId).style.display === 'none') {
-                  togglePanelVisibility(panelId);
-              }
+              if (panelId) {
+        const panel = document.getElementById(panelId);
+        if (panel && panel.style.display === 'none') {
+            togglePanelVisibility(panelId);
+        }
+    }
               
               // Now toggle the content
               if (content.classList.contains('collapsed')) {
