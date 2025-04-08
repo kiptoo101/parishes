@@ -299,23 +299,6 @@
                     });
                 }
                 
-                // Reset filters button
-                const resetBtn = document.getElementById('reset-filters');
-                if (resetBtn) {
-                    resetBtn.addEventListener('click', function() {
-                        // Clear all filter inputs
-                        const filterInputs = document.querySelectorAll('#filter-panel input');
-                        filterInputs.forEach(input => {
-                            input.value = '';
-                        });
-                        
-                        // If FiltersManager exists, call reset
-                        if (window.FiltersManager && typeof FiltersManager.resetFilters === 'function') {
-                            FiltersManager.resetFilters();
-                        }
-                    });
-                }
-                
                 // Initialize panel visibility
                 initPanels();
                 
@@ -393,6 +376,96 @@
                 
                 // Initialize autolinker
                 window.autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+                
+                // Add proper click handler for mobile quick actions button
+                const quickActionsBtn = document.getElementById('mobile-quick-actions');
+                if (quickActionsBtn) {
+                    quickActionsBtn.addEventListener('click', function(e) {
+                        e.preventDefault(); // Prevent default action
+                        e.stopPropagation(); // Stop propagation
+                        
+                        // Show or hide the mobile actions menu
+                        const menu = document.getElementById('mobile-actions-menu');
+                        if (menu) {
+                            if (menu.style.display === 'flex') {
+                                // If visible, hide it
+                                menu.classList.remove('visible');
+                                this.textContent = '+';
+                                
+                                // Wait for animation to complete before hiding
+                                setTimeout(() => {
+                                    menu.style.display = 'none';
+                                }, 300);
+                            } else {
+                                // If hidden, show it
+                                menu.style.display = 'flex';
+                                // Trigger reflow
+                                void menu.offsetWidth;
+                                menu.classList.add('visible');
+                                this.textContent = '×';
+                            }
+                        }
+                        
+                        console.log('Mobile quick actions button clicked'); // For debugging
+                    });
+                }
+                
+                // Make sure action items in the menu have proper click handlers
+                const actionItems = document.querySelectorAll('.mobile-action-item');
+                actionItems.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const panelId = this.getAttribute('data-panel');
+                        const contentId = this.getAttribute('data-content');
+                        
+                        if (panelId && contentId) {
+                            // Toggle panel visibility
+                            const panel = document.getElementById(panelId);
+                            if (panel) {
+                                if (panel.style.display === 'none' || !panel.style.display) {
+                                    panel.style.display = 'block';
+                                    
+                                    // Also expand its content
+                                    const content = document.getElementById(contentId);
+                                    if (content && content.classList.contains('collapsed')) {
+                                        togglePanel(contentId);
+                                    }
+                                } else {
+                                    panel.style.display = 'none';
+                                }
+                            }
+                        } else if (this.id === 'action-my-location') {
+                            // Special case for location button
+                            const locateButton = document.querySelector('.leaflet-control-locate a');
+                            if (locateButton) locateButton.click();
+                        } else if (this.id === 'action-hide-all-panels') {
+                            // Hide all panels
+                            const panels = document.querySelectorAll('.panel');
+                            panels.forEach(panel => {
+                                panel.style.display = 'none';
+                            });
+                        }
+                        
+                        // Hide the menu after action
+                        const menu = document.getElementById('mobile-actions-menu');
+                        if (menu) {
+                            menu.classList.remove('visible');
+                            setTimeout(() => {
+                                menu.style.display = 'none';
+                            }, 300);
+                        }
+                        
+                        // Update the quick actions button
+                        const quickActionsBtn = document.getElementById('mobile-quick-actions');
+                        if (quickActionsBtn) {
+                            quickActionsBtn.textContent = '+';
+                        }
+                        
+                        console.log('Action item clicked:', this.id); // For debugging
+                    });
+                });
             });
             
             // Display churches on the map
@@ -487,11 +560,20 @@
                 });
             }
             
-            // Add popup to church marker
+            // Add popup to church marker - UPDATED to include city
             function addChurchPopup(feature, layer) {
                 const lat = feature.geometry.coordinates[1].toFixed(6);
                 const lng = feature.geometry.coordinates[0].toFixed(6);
                 
+                // Extract city from address if not already present
+                if (!feature.properties.City && feature.properties.Address) {
+                    const addressParts = feature.properties.Address.split(',');
+                    if (addressParts.length >= 2) {
+                        feature.properties.City = addressParts[addressParts.length - 2].trim();
+                    }
+                }
+                
+                // Include city in the popup
                 var popupContent = '<table style="width:100%;">\
                         <tr>\
                             <td colspan="2" style="font-size:16px;"><strong>' + 
@@ -506,6 +588,11 @@
                             <td style="font-size:14px;">Type:</td>\
                             <td style="font-size:14px;">' + 
                             (feature.properties['Type'] !== null ? window.autolinker.link(feature.properties['Type'].toLocaleString()) : '') + '</td>\
+                        </tr>\
+                        <tr>\
+                            <td style="font-size:14px;">City:</td>\
+                            <td style="font-size:14px;">' + 
+                            (feature.properties['City'] !== null ? window.autolinker.link(feature.properties['City']) : '') + '</td>\
                         </tr>\
                         <tr>\
                             <td style="font-size:14px;">Country:</td>\
@@ -570,6 +657,10 @@
                     if (feature.properties.Type) {
                         detailsText += feature.properties.Type;
                     }
+                    if (feature.properties.City) {
+                        detailsText += detailsText ? ' • ' : '';
+                        detailsText += feature.properties.City;
+                    }
                     if (feature.properties.Country) {
                         detailsText += detailsText ? ' • ' : '';
                         detailsText += feature.properties.Country;
@@ -621,6 +712,34 @@
                 }
                 
                 console.log(`Added ${listElement.childNodes.length} items to church list`);
+                
+                // Setup list search input
+                setupListSearch();
+            }
+            
+            // Setup list search input functionality
+            function setupListSearch() {
+                const searchInput = document.getElementById('list-search');
+                if (!searchInput) return;
+                
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase();
+                    
+                    // Get all church items
+                    const items = document.querySelectorAll('.church-item');
+                    
+                    // Filter items
+                    items.forEach(item => {
+                        const title = item.querySelector('.church-title').textContent.toLowerCase();
+                        const details = item.querySelector('.church-details').textContent.toLowerCase();
+                        
+                        if (title.includes(query) || details.includes(query)) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
             }
             
             // Highlight church in list
@@ -641,6 +760,260 @@
                     }
                 }
             }
+        </script>
+        
+        <!-- Filter Script - Handle filtering of churches -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Global references
+                let allChurches = [];  // All churches from data
+                let filteredChurches = []; // Currently filtered churches
+                
+                // Filter collections
+                let uniqueCountries = new Set();
+                let uniqueCities = new Set();
+                let uniqueJurisdictions = new Set();
+                let uniqueTypes = new Set();
+                let uniqueRites = new Set();
+                
+                // Initialize filters when churches are loaded
+                window.initializeFilters = function(churches) {
+                    console.log("Initializing filters with", churches.length, "churches");
+                    allChurches = churches;
+                    
+                    // Extract unique values for filters
+                    churches.forEach(function(church) {
+                        if (church.properties.Country) uniqueCountries.add(church.properties.Country);
+                        if (church.properties.City) uniqueCities.add(church.properties.City);
+                        if (church.properties.Jurisdiction) uniqueJurisdictions.add(church.properties.Jurisdiction);
+                        if (church.properties.Type) uniqueTypes.add(church.properties.Type);
+                        if (church.properties.Rite) uniqueRites.add(church.properties.Rite);
+                    });
+                    
+                    console.log("Found", uniqueCountries.size, "countries,", uniqueCities.size, "cities");
+                    
+                    // Setup suggestion inputs
+                    setupSearchableDropdown('title-search', allChurches.map(c => c.properties.Title).filter(Boolean));
+                    setupSearchableDropdown('city-search', Array.from(uniqueCities));
+                    setupSearchableDropdown('country-search', Array.from(uniqueCountries));
+                    setupSearchableDropdown('jurisdiction-search', Array.from(uniqueJurisdictions));
+                    setupSearchableDropdown('type-search', Array.from(uniqueTypes));
+                    setupSearchableDropdown('rite-search', Array.from(uniqueRites));
+                    
+                    // Add event listeners to filter inputs
+                    document.getElementById('title-search').addEventListener('input', debounce(applyFilters, 300));
+                    document.getElementById('city-search').addEventListener('input', debounce(applyFilters, 300));
+                    document.getElementById('country-search').addEventListener('input', debounce(applyFilters, 300));
+                    document.getElementById('jurisdiction-search').addEventListener('input', debounce(applyFilters, 300));
+                    document.getElementById('type-search').addEventListener('input', debounce(applyFilters, 300));
+                    document.getElementById('rite-search').addEventListener('input', debounce(applyFilters, 300));
+                    
+                    // Reset filters button
+                    document.getElementById('reset-filters').addEventListener('click', resetFilters);
+                    
+                    // Initial filter
+                    applyFilters();
+                };
+                
+                // Setup searchable dropdown
+                function setupSearchableDropdown(inputId, items) {
+                    const input = document.getElementById(inputId);
+                    if (!input) return;
+                    
+                    // When input changes, update suggestions
+                    input.addEventListener('input', function() {
+                        const query = this.value.toLowerCase();
+                        const matches = items.filter(item => 
+                            item && item.toLowerCase().includes(query)
+                        ).slice(0, 10); // Limit to 10 suggestions
+                        
+                        showSuggestions(inputId, matches);
+                    });
+                    
+                    // When input gets focus, show suggestions
+                    input.addEventListener('focus', function() {
+                        const query = this.value.toLowerCase();
+                        const matches = items.filter(item => 
+                            item && item.toLowerCase().includes(query)
+                        ).slice(0, 10);
+                        
+                        showSuggestions(inputId, matches);
+                    });
+                    
+                    // Hide suggestions when clicking outside
+                    document.addEventListener('click', function(e) {
+                        if (e.target !== input) {
+                            hideSuggestions(inputId);
+                        }
+                    });
+                }
+                
+                // Show suggestions for dropdown
+                function showSuggestions(inputId, suggestions) {
+                    // Create suggestions container if it doesn't exist
+                    let suggestionsContainer = document.getElementById(inputId + '-suggestions');
+                    if (!suggestionsContainer) {
+                        suggestionsContainer = document.createElement('div');
+                        suggestionsContainer.className = 'dropdown-list';
+                        suggestionsContainer.id = inputId + '-suggestions';
+                        
+                        // Insert after input
+                        const input = document.getElementById(inputId);
+                        input.parentNode.appendChild(suggestionsContainer);
+                        
+                        // Add click handler for suggestions
+                        suggestionsContainer.addEventListener('click', function(e) {
+                            if (e.target.classList.contains('dropdown-item')) {
+                                input.value = e.target.textContent;
+                                hideSuggestions(inputId);
+                                applyFilters();
+                            }
+                        });
+                    }
+                    
+                    // Clear existing suggestions
+                    suggestionsContainer.innerHTML = '';
+                    
+                    // Add "All" option
+                    const allItem = document.createElement('div');
+                    allItem.className = 'dropdown-item';
+                    allItem.textContent = 'All';
+                    suggestionsContainer.appendChild(allItem);
+                    
+                    // Add each suggestion
+                    suggestions.forEach(item => {
+                        if (!item) return;
+                        
+                        const element = document.createElement('div');
+                        element.className = 'dropdown-item';
+                        element.textContent = item;
+                        suggestionsContainer.appendChild(element);
+                    });
+                    
+                    // Show the suggestions
+                    suggestionsContainer.style.display = 'block';
+                }
+                
+                // Hide suggestions dropdown
+                function hideSuggestions(inputId) {
+                    const suggestions = document.getElementById(inputId + '-suggestions');
+                    if (suggestions) {
+                        suggestions.style.display = 'none';
+                    }
+                }
+                
+                // Apply filters based on current input values
+                function applyFilters() {
+                    console.log("Applying filters...");
+                    
+                    // Get filter values
+                    const titleFilter = document.getElementById('title-search').value.toLowerCase();
+                    const cityFilter = document.getElementById('city-search').value.toLowerCase();
+                    const countryFilter = document.getElementById('country-search').value.toLowerCase();
+                    const jurisdictionFilter = document.getElementById('jurisdiction-search').value.toLowerCase();
+                    const typeFilter = document.getElementById('type-search').value.toLowerCase();
+                    const riteFilter = document.getElementById('rite-search').value.toLowerCase();
+                    
+                    // Check if any filters are active
+                    const filtersActive = titleFilter || cityFilter || countryFilter || 
+                                          jurisdictionFilter || typeFilter || riteFilter;
+                    
+                    // Update filter indicator
+                    document.getElementById('filter-active-indicator').style.display = 
+                        filtersActive ? 'block' : 'none';
+                    
+                    // Update loading status
+                    document.getElementById('filter-info').textContent = 'Filtering churches...';
+                    
+                    // Filter churches
+                    filteredChurches = allChurches.filter(church => {
+                        const props = church.properties;
+                        
+                        // Extract properties (defaults to empty string if null)
+                        const title = (props.Title || '').toLowerCase();
+                        const city = (props.City || '').toLowerCase();
+                        const country = (props.Country || '').toLowerCase();
+                        const jurisdiction = (props.Jurisdiction || '').toLowerCase();
+                        const type = (props.Type || '').toLowerCase();
+                        const rite = (props.Rite || '').toLowerCase();
+                        
+                        // Check if each filter matches (if set)
+                        const titleMatch = !titleFilter || titleFilter === 'all' || title.includes(titleFilter);
+                        const cityMatch = !cityFilter || cityFilter === 'all' || city.includes(cityFilter);
+                        const countryMatch = !countryFilter || countryFilter === 'all' || country.includes(countryFilter);
+                        const jurisdictionMatch = !jurisdictionFilter || jurisdictionFilter === 'all' || 
+                                                  jurisdiction.includes(jurisdictionFilter);
+                        const typeMatch = !typeFilter || typeFilter === 'all' || type.includes(typeFilter);
+                        const riteMatch = !riteFilter || riteFilter === 'all' || rite.includes(riteFilter);
+                        
+                        // All conditions must match
+                        return titleMatch && cityMatch && countryMatch && jurisdictionMatch && typeMatch && riteMatch;
+                    });
+                    
+                    console.log(`Filtered to ${filteredChurches.length} churches`);
+                    
+                    // Update church list and map
+                    populateChurchList(filteredChurches);
+                    displayChurches(filteredChurches);
+                    
+                    // Update info text
+                    document.getElementById('filter-info').textContent = 
+                        `Showing ${filteredChurches.length} of ${allChurches.length} churches`;
+                        
+                    // Show/hide zoom to filtered results button
+                    document.getElementById('zoom-to-filter').style.display = 
+                        (filtersActive && filteredChurches.length > 0) ? 'block' : 'none';
+                        
+                    // Add zoom to filter click handler
+                    document.getElementById('zoom-to-filter').onclick = function() {
+                        if (filteredChurches.length > 0 && window.map) {
+                            // Create bounds to contain all filtered churches
+                            const points = filteredChurches.map(church => [
+                                church.geometry.coordinates[1],
+                                church.geometry.coordinates[0]
+                            ]);
+                            
+                            const bounds = L.latLngBounds(points);
+                            window.map.fitBounds(bounds, {
+                                padding: [50, 50],
+                                maxZoom: 12
+                            });
+                        }
+                    };
+                }
+                
+                // Reset all filters
+                function resetFilters() {
+                    console.log("Resetting filters");
+                    
+                    // Clear all filter inputs
+                    document.getElementById('title-search').value = '';
+                    document.getElementById('city-search').value = '';
+                    document.getElementById('country-search').value = '';
+                    document.getElementById('jurisdiction-search').value = '';
+                    document.getElementById('type-search').value = '';
+                    document.getElementById('rite-search').value = '';
+                    
+                    // Hide filter indicator
+                    document.getElementById('filter-active-indicator').style.display = 'none';
+                    
+                    // Reapply filters (which now shows all)
+                    applyFilters();
+                }
+                
+                // Debounce function to prevent excessive filter application
+                function debounce(func, wait) {
+                    let timeout;
+                    return function() {
+                        const context = this;
+                        const args = arguments;
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => {
+                            func.apply(context, args);
+                        }, wait);
+                    };
+                }
+            });
         </script>
         
         <!-- Simplified Data Processing Script -->
@@ -676,14 +1049,27 @@
                     feature.properties.id = index;
                 });
                 
+                // Extract city from address for each church
+                allChurches.forEach(function(church) {
+                    if (church.properties.Address) {
+                        const addressParts = church.properties.Address.split(',');
+                        if (addressParts.length >= 2) {
+                            church.properties.City = addressParts[addressParts.length - 2].trim();
+                        }
+                    }
+                });
+                
                 // Update loading status
                 document.getElementById('loading-status').textContent = `Loaded ${allChurches.length} churches`;
                 
-                // Populate church list
-                populateChurchList(allChurches);
-                
-                // Display churches on map
-                displayChurches(allChurches);
+                // Initialize filters with all churches
+                if (window.initializeFilters) {
+                    window.initializeFilters(allChurches);
+                } else {
+                    // If filters not available, just display all churches
+                    populateChurchList(allChurches);
+                    displayChurches(allChurches);
+                }
                 
                 // Hide loading indicator
                 setTimeout(function() {
@@ -706,7 +1092,5 @@
         <script src="data/json_complete_parish_data_1_part3.js"></script>
         <script src="data/json_complete_parish_data_1_part4.js"></script>
         <script src="data/json_complete_parish_data_1_part5.js"></script>
-        
-        <!-- No need for the original loader file as we're handling loading directly -->
     </body>
 </html>
