@@ -1,0 +1,724 @@
+/* Base Styles */
+html, body, #map {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+/* Dark blue map styling - Simple and clean */
+.leaflet-container {
+    background-color: #054a94; /* Dark blue background */
+}
+
+/* Panel styling with blue color scheme */
+.panel {
+    position: absolute;
+    z-index: 1000;
+    background: #f0f8ff; /* Light blue background */
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    border: 1px solid #bbd6ff;
+    max-width: 90%; /* Prevent overflow on mobile */
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 5px;
+    background-color: #cce0ff; /* Slightly darker blue for header */
+    border-radius: 3px;
+    margin-bottom: 8px;
+}
+
+.panel-header h4 {
+    margin: 0;
+    color: #003366; /* Dark blue text */
+    font-size: 1rem; /* Better sizing for mobile */
+}
+
+.panel-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.panel-content.collapsed {
+    max-height: 0;
+    display: none; /* Hide completely when collapsed for better space usage */
+}
+
+.toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 5px;
+    color: #003366; /* Dark blue */
+    min-width: 20px; /* Ensure touchable size */
+    min-height: 20px;
+}
+
+#filter-panel {
+    top: 10px;
+    right: 10px;
+    max-height: 80vh;
+    overflow-y: auto;
+    width: 250px;
+}
+
+#legend {
+    bottom: 30px;
+    right: 10px;
+}
+
+#church-list-panel {
+    top: 10px;
+    right: 270px;
+    width: 300px;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: none; /* Initially hidden on mobile */
+}
+
+/* Enhanced mobile-specific adjustments */
+@media (min-width: 768px) {
+    #church-list-panel {
+        display: block;
+    }
+    
+    #church-list-content {
+        display: block; /* Always show on desktop */
+    }
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 767px) {
+    .panel {
+        max-height: 60vh; /* Reduced height on mobile */
+        max-width: 85%;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3); /* Stronger shadow for better visibility */
+    }
+    
+    #filter-panel {
+        width: 85%;
+        max-width: 280px;
+        right: 5px;
+        top: 5px; /* Position closer to top */
+        display: none; /* Hide filter panel on mobile by default */
+    }
+    
+    #legend {
+        bottom: 10px;
+        right: 5px;
+        max-width: 160px;
+        z-index: 999; /* Ensure it's above other elements */
+        display: none; /* Hide legend on mobile by default */
+    }
+    
+    .panel-content {
+        display: none; /* Initially collapsed on mobile */
+    }
+    
+    .panel-header {
+        padding: 8px; /* Larger touch target */
+    }
+    
+    /* Mobile toggle button for church list panel */
+    #mobile-toggle-list {
+        position: absolute;
+        top: 50px; /* Positioned lower to avoid overlapping with filter panel */
+        right: 10px;
+        z-index: 1000;
+        background: #003366;
+        color: white;
+        padding: 8px 12px; /* Larger padding for better touch target */
+        border-radius: 4px;
+        display: block;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    /* When visible on mobile */
+    #church-list-panel.mobile-visible {
+        display: block;
+        right: 5px;
+        width: 85%;
+        max-width: 280px;
+        top: 90px; /* Position below mobile toggle button */
+    }
+    
+    /* Mobile-specific panel transitions */
+    .panel {
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    
+    .panel.minimized {
+        transform: scale(0.95);
+        opacity: 0.9;
+    }
+    
+    /* Make text smaller on mobile */
+    .panel-content {
+        font-size: 14px;
+    }
+    
+    /* Better visibility for toggle buttons */
+    .toggle-btn {
+        font-size: 18px;
+        min-width: 25px;
+        min-height: 25px;
+        color: #002244; /* Darker color for better contrast */
+    }
+}
+
+#church-list {
+    max-height: calc(80vh - 50px);
+    overflow-y: auto;
+}
+
+/* Search input styling */
+.search-container {
+    position: relative;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #80b3ff; /* Blue border */
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-bottom: 5px;
+    background-color: #fcfdff;
+    font-size: 16px; /* Better for mobile input */
+}
+
+.filter-section {
+    margin-bottom: 15px;
+}
+
+/* Loading indicator */
+#loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(240, 248, 255, 0.9); /* Light blue background */
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    z-index: 1001;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    min-width: 280px;
+    border: 1px solid #80b3ff;
+    max-width: 90%; /* Mobile-friendly */
+}
+
+#loading-progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #e6effd; /* Very light blue */
+    border-radius: 10px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+
+#loading-progress-fill {
+    height: 100%;
+    background-color: #4682B4; /* Steel blue */
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+/* Church list item */
+.church-item {
+    padding: 12px; /* Larger padding for better touch targets */
+    border-bottom: 1px solid #cce0ff; /* Light blue border */
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.church-item:hover, .church-item:active {
+    background-color: #e6f0ff; /* Light blue hover */
+}
+
+.church-title {
+    font-weight: bold;
+    margin-bottom: 3px;
+    color: #003366; /* Dark blue */
+    font-size: 14px; /* Slightly larger for mobile */
+}
+
+.church-details {
+    font-size: 12px;
+    color: #4682B4; /* Steel blue */
+}
+
+/* Enhanced cluster styling */
+.marker-cluster {
+    background-clip: padding-box;
+    border-radius: 20px;
+}
+
+.marker-cluster div {
+    width: 36px;
+    height: 36px;
+    margin-left: 2px;
+    margin-top: 2px;
+    text-align: center;
+    border-radius: 18px;
+    font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker-cluster span {
+    color: white;
+    font-weight: bold;
+}
+
+/* Enhanced cluster colors with better visibility */
+.cluster-small div {
+    background-color: rgba(115, 170, 255, 0.9); /* Brighter blue */
+}
+
+.cluster-medium div {
+    background-color: rgba(64, 127, 219, 0.9); /* Medium Blue */
+}
+
+.cluster-large div {
+    background-color: rgba(28, 82, 168, 0.9); /* Dark Blue */
+}
+
+.marker-cluster-small {
+    background-color: rgba(115, 170, 255, 0.5); /* Brighter blue */
+}
+
+.marker-cluster-medium {
+    background-color: rgba(64, 127, 219, 0.5); /* Medium Blue */
+}
+
+.marker-cluster-large {
+    background-color: rgba(28, 82, 168, 0.5); /* Dark Blue */
+}
+
+/* Enhanced legend */
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.legend-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.legend-text {
+    flex: 1;
+    color: #003366; /* Dark blue */
+}
+
+/* Updated color filters for church and cathedral icons */
+.cathedral-icon-green {
+    filter: hue-rotate(90deg) saturate(1.3) brightness(1.2); /* This will make it green */
+}
+
+.church-icon-white {
+    filter: brightness(2) saturate(0); /* This will make it white */
+}
+
+/* Updated legend icons with the new designs */
+#basilica-icon {
+    background-color: #00FF00; /* Green */
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); /* Star shape */
+}
+
+#church-icon {
+    background-color: #FFFFFF; /* White */
+    border-radius: 50%;
+}
+
+#cross-icon {
+    position: relative;
+    background-color: transparent;
+}
+
+#cross-icon:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 40%;
+    width: 20%;
+    height: 100%;
+    background-color: #FFFFFF; /* White */
+}
+
+#cross-icon:after {
+    content: '';
+    position: absolute;
+    top: 40%;
+    left: 0;
+    width: 100%;
+    height: 20%;
+    background-color: #FFFFFF; /* White */
+}
+
+/* Dropdown suggestion */
+.dropdown-list {
+    position: absolute;
+    width: 100%;
+    max-height: 150px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #80b3ff; /* Blue border */
+    border-radius: 0 0 4px 4px;
+    z-index: 1001;
+    display: none;
+}
+
+.dropdown-item {
+    padding: 12px; /* Larger touch target for mobile */
+    cursor: pointer;
+    font-size: 14px; /* Slightly larger text for mobile */
+}
+
+.dropdown-item:hover, .dropdown-item:active {
+    background-color: #e6f0ff; /* Light blue hover */
+}
+
+/* Filter status indicator */
+#filter-active-indicator {
+    display: none;
+    position: absolute;
+    top: 10px;
+    left: 60px;
+    background: rgba(0, 51, 102, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 1000;
+}
+
+/* Added zoom-to-filter button */
+#zoom-to-filter {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px; /* Larger for touch */
+    background: #003366;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: none;
+    font-size: 14px; /* Better for mobile */
+}
+
+#zoom-to-filter:hover, #zoom-to-filter:active {
+    background: #002244;
+}
+
+/* Mobile-specific buttons */
+.mobile-btn {
+    padding: 10px 12px; /* Slightly larger horizontal padding */
+    background: #003366;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 5px;
+    display: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Add shadow for better visibility */
+}
+
+@media (max-width: 767px) {
+    .mobile-btn {
+        display: block;
+    }
+    
+    .leaflet-control-locate {
+        margin-top: 50px !important; /* More space for controls */
+    }
+    
+    /* Make sure buttons have enough space between them for touch */
+    #reset-filters, #zoom-to-filter, .mobile-btn {
+        margin-bottom: 10px;
+        padding: 12px 10px; /* Taller for better touch targets */
+    }
+    
+    /* Enhanced touch targets for leaflet controls */
+    .leaflet-touch .leaflet-control-layers, 
+    .leaflet-touch .leaflet-bar a {
+        min-width: 35px; /* Increased from 30px */
+        min-height: 35px; /* Increased from 30px */
+        line-height: 35px; /* Match the min-height */
+    }
+    
+    /* Improved visibility for map controls */
+    .leaflet-control-zoom a {
+        font-size: 18px !important; /* Larger icons */
+        font-weight: bold;
+    }
+    
+    /* Make filter inputs larger on mobile */
+    .search-input {
+        height: 40px; /* Taller input fields */
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    /* Fix for iOS preventing zooming on inputs */
+    input[type="text"] {
+        font-size: 16px !important;
+    }
+}
+
+/* Legend image styling */
+.legend-image {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    object-fit: contain;
+}
+  
+/* Apply white filter to the church icon */
+.church-icon-white {
+    filter: brightness(2) saturate(0); /* This will make it white */
+}
+  
+/* Apply green filter to cathedral icon */
+.cathedral-icon-green {
+    filter: hue-rotate(90deg) saturate(1.3) brightness(1.2); /* This will make it green */
+}
+  
+/* Make the monument icon slightly smaller */
+.monument-icon {
+    width: 20px;
+    height: 20px;
+    opacity: 0.85; /* Slightly more transparent to distinguish it */
+}
+  
+/* Updated legend item alignment */
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+  
+.legend-text {
+    flex: 1;
+    color: #003366; /* Dark blue */
+}
+  
+/* Mobile-optimized legend */
+@media (max-width: 767px) {
+    .legend-item {
+        margin-bottom: 15px; /* More space between items */
+    }
+      
+    .legend-image {
+        width: 28px; /* Larger icons */
+        height: 28px;
+    }
+      
+    .legend-text {
+        font-size: 14px; /* Slightly larger text */
+    }
+}
+  
+/* Enhanced Quick access floating action button for mobile */
+#mobile-quick-actions {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #003366;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    z-index: 1000;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+#mobile-quick-actions:active {
+    transform: scale(0.95);
+    background-color: #002244;
+}
+
+#mobile-actions-menu {
+    position: fixed;
+    bottom: 80px;
+    left: 20px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    width: 180px;
+    transform: translateY(10px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#mobile-actions-menu.visible {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.mobile-action-item {
+    padding: 12px;
+    text-align: left;
+    border: none;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    font-size: 14px;
+    color: #003366;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.mobile-action-item:last-child {
+    border-bottom: none;
+}
+
+.mobile-action-item:hover, .mobile-action-item:active {
+    background: #f0f8ff;
+}
+
+.mobile-action-item.active {
+    background-color: #e6f0ff;
+    font-weight: bold;
+}
+
+.mobile-action-icon {
+    margin-right: 10px;
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.panel-visibility-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+    margin-left: auto;
+    display: none;
+}
+
+.mobile-action-item.panel-visible .panel-visibility-indicator {
+    display: block;
+}
+
+@media (max-width: 767px) {
+    #mobile-quick-actions {
+        display: flex;
+    }
+}
+
+/* Panel control badges for quick actions menu */
+.panel-control-badge {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.panel-control-badge.panel-active {
+    background-color: #4CAF50; /* Green for active */
+}
+
+.panel-control-badge.panel-inactive {
+    background-color: #ccc; /* Gray for inactive */
+}
+
+/* Mobile popup styling to ensure visibility */
+.mobile-popup .leaflet-popup-content-wrapper {
+    max-width: 280px;
+    font-size: 14px;
+}
+
+.mobile-popup .leaflet-popup-content {
+    margin: 10px 12px;
+    line-height: 1.5;
+}
+
+.mobile-popup .leaflet-popup-close-button {
+    padding: 6px 6px 0 0; /* Larger touch target */
+    font-size: 18px; /* Larger X button */
+}
+
+/* Ensure popup is visible and not cut off on mobile */
+.leaflet-popup {
+    margin-bottom: 0; /* Adjust position to ensure visibility */
+}
+
+/* Fix for popup being cut off at the bottom on mobile */
+.leaflet-popup-tip-container {
+    margin-top: -1px;
+}
+
+/* Fix for popup not appearing */
+.leaflet-popup-content-wrapper {
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+/* Make popups more visible with brighter background */
+.leaflet-popup-content-wrapper {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    border: 2px solid rgba(0, 51, 102, 0.5) !important;
+}
+
+/* Make sure popup tips are visible */
+.leaflet-popup-tip {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Reset filters button styling */
+#reset-filters {
+    width: 100%;
+    padding: 12px;
+    background: #4682B4;
+    color: white;
+    border: 1px solid #3366cc;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+#reset-filters:hover, #reset-filters:active {
+    background: #3671A3;
+}
+
+@media (max-width: 767px) {
+    #mobile-toggle-list {
+        display: none; /* Hide the button on mobile */
+    }
+}
