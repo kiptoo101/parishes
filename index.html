@@ -16,7 +16,278 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.79.0/dist/L.Control.Locate.min.css" />
         
         <!-- Our custom styles -->
-        <link rel="stylesheet" href="css/app.css">
+        <style>
+            /* Updated icon colors */
+            .cathedral-icon-brown {
+                filter: hue-rotate(60deg) saturate(0.8) brightness(0.9);
+            }
+            .church-icon-blue {
+                filter: hue-rotate(200deg) saturate(1.2) brightness(1.1);
+            }
+            .monument-icon {
+                filter: hue-rotate(30deg) saturate(0.7) brightness(0.8);
+            }
+            
+            /* Rest of your existing CSS styles */
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+            }
+            #map {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 100%;
+            }
+            .panel {
+                position: absolute;
+                background: white;
+                border-radius: 5px;
+                box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+                z-index: 1000;
+                overflow: hidden;
+            }
+            #filter-panel {
+                top: 10px;
+                left: 10px;
+                width: 250px;
+            }
+            #church-list-panel {
+                top: 10px;
+                right: 10px;
+                width: 300px;
+                max-height: 80%;
+                display: none;
+            }
+            #legend {
+                bottom: 30px;
+                right: 10px;
+                width: 200px;
+            }
+            .panel-header {
+                padding: 10px;
+                background: #f8f9fa;
+                border-bottom: 1px solid #ddd;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .panel-header h4 {
+                margin: 0;
+                font-size: 14px;
+            }
+            .panel-content {
+                padding: 10px;
+                max-height: 400px;
+                overflow-y: auto;
+            }
+            .collapsed {
+                display: none;
+            }
+            .toggle-btn {
+                background: none;
+                border: none;
+                font-size: 18px;
+                cursor: pointer;
+                padding: 0 5px;
+            }
+            .filter-section {
+                margin-bottom: 10px;
+            }
+            .search-container {
+                position: relative;
+            }
+            .search-input {
+                width: 100%;
+                padding: 5px;
+                box-sizing: border-box;
+            }
+            .dropdown-list {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border: 1px solid #ddd;
+                border-top: none;
+                z-index: 1001;
+                display: none;
+            }
+            .dropdown-item {
+                padding: 5px;
+                cursor: pointer;
+            }
+            .dropdown-item:hover {
+                background: #f0f0f0;
+            }
+            #church-list {
+                max-height: 400px;
+                overflow-y: auto;
+            }
+            .church-item {
+                padding: 8px;
+                border-bottom: 1px solid #eee;
+                cursor: pointer;
+            }
+            .church-item:hover {
+                background: #f5f5f5;
+            }
+            .church-title {
+                font-weight: bold;
+                margin-bottom: 3px;
+            }
+            .church-details {
+                font-size: 12px;
+                color: #666;
+            }
+            #filter-active-indicator {
+                position: absolute;
+                top: 60px;
+                left: 20px;
+                background: #ff6b6b;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 3px;
+                font-size: 12px;
+                z-index: 1000;
+                display: none;
+            }
+            #mobile-toggle-list {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                z-index: 1000;
+                background: white;
+                border: none;
+                padding: 8px 12px;
+                border-radius: 3px;
+                box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+                cursor: pointer;
+                display: none;
+            }
+            #mobile-quick-actions {
+                position: absolute;
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: #4a89dc;
+                color: white;
+                border: none;
+                font-size: 24px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                z-index: 1000;
+                cursor: pointer;
+                display: none;
+            }
+            #mobile-actions-menu {
+                position: absolute;
+                bottom: 80px;
+                right: 20px;
+                background: white;
+                border-radius: 5px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                z-index: 1000;
+                display: none;
+                flex-direction: column;
+                padding: 10px 0;
+                transform: translateY(20px);
+                opacity: 0;
+                transition: all 0.3s ease;
+            }
+            #mobile-actions-menu.visible {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            .mobile-action-item {
+                display: flex;
+                align-items: center;
+                padding: 10px 15px;
+                background: none;
+                border: none;
+                text-align: left;
+                cursor: pointer;
+                width: 100%;
+            }
+            .mobile-action-item:hover {
+                background: #f5f5f5;
+            }
+            .mobile-action-icon {
+                margin-right: 10px;
+                font-size: 18px;
+            }
+            .panel-visibility-indicator {
+                margin-left: auto;
+                color: #999;
+                font-size: 12px;
+            }
+            #loading-indicator {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(255,255,255,0.9);
+                z-index: 2000;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            #loading-progress-bar {
+                width: 200px;
+                height: 10px;
+                background: #eee;
+                border-radius: 5px;
+                margin: 10px 0;
+                overflow: hidden;
+            }
+            #loading-progress-fill {
+                height: 100%;
+                width: 0%;
+                background: #4a89dc;
+                transition: width 0.3s;
+            }
+            .legend-item {
+                display: flex;
+                align-items: center;
+                margin-bottom: 5px;
+            }
+            .legend-image {
+                width: 20px;
+                height: 20px;
+                margin-right: 8px;
+            }
+            .legend-text {
+                font-size: 12px;
+            }
+            @media (max-width: 768px) {
+                #filter-panel, #church-list-panel, #legend {
+                    width: 90%;
+                    left: 5%;
+                    right: 5%;
+                }
+                #filter-panel {
+                    top: 10px;
+                }
+                #church-list-panel {
+                    top: 50px;
+                    max-height: 60%;
+                }
+                #legend {
+                    bottom: 80px;
+                }
+                #mobile-toggle-list, #mobile-quick-actions {
+                    display: block;
+                }
+                #mobile-actions-menu {
+                    display: flex;
+                }
+            }
+        </style>
         
         <title>Catholic Churches Interactive Map</title>
     </head>
@@ -123,20 +394,20 @@
                 <button class="toggle-btn" id="legend-toggle">+</button>
             </div>
             
-            <!-- Updated legend section with actual images and new colors -->
+            <!-- Updated legend section with new colors -->
             <div id="legend-content" class="panel-content collapsed">
                 <div class="legend-item">
-                    <img src="cathedral-icon.png" class="legend-image cathedral-icon-green" alt="Basilica or Cathedral" />
+                    <img src="cathedral-icon.png" class="legend-image cathedral-icon-brown" alt="Basilica or Cathedral" />
                     <div class="legend-text">Basilica or Cathedral</div>
                 </div>
                 
                 <div class="legend-item">
-                    <img src="church-icon.png" class="legend-image church-icon-white" alt="Church" />
+                    <img src="church-icon.png" class="legend-image church-icon-blue" alt="Church" />
                     <div class="legend-text">Church or Shrine</div>
                 </div>
                 
                 <div class="legend-item">
-                    <img src="cathedral-icon.png" class="legend-image monument-icon cathedral-icon-green" alt="Monument" />
+                    <img src="cathedral-icon.png" class="legend-image monument-icon" alt="Monument" />
                     <div class="legend-text">Historic Church or Monument</div>
                 </div>
             </div>
@@ -321,13 +592,19 @@
         <script>
             // Basic map implementation to ensure churches are displayed
             document.addEventListener('DOMContentLoaded', function() {
-                // Initialize Leaflet map
+                // Initialize Leaflet map with bounds to prevent dragging past world limits
+                var southWest = L.latLng(-85, -180),
+                    northEast = L.latLng(85, 180);
+                var bounds = L.latLngBounds(southWest, northEast);
+                
                 var map = L.map('map', {
                     zoomControl: false,
-                    maxZoom: 18,  // Reduced from 28 to more reasonable level
+                    maxZoom: 18,
                     minZoom: 2,
-                    worldCopyJump: true
-                }).setView([0, 0], 2);
+                    worldCopyJump: true,
+                    maxBounds: bounds,
+                    maxBoundsViscosity: 1.0
+                }).setView([20, 0], 2);
                 
                 // Make map global for other scripts to access
                 window.map = map;
@@ -347,7 +624,8 @@
                 var baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                     maxZoom: 18,
-                    minZoom: 2
+                    minZoom: 2,
+                    noWrap: true
                 }).addTo(map);
                 
                 // Initialize marker cluster group
@@ -510,7 +788,7 @@
                 console.log("Churches displayed on map");
             }
             
-            // Get icon for church based on type
+            // Get icon for church based on type (updated with new colors)
             function getChurchIcon(feature) {
                 // Get the type and title info
                 var type = feature.properties.Type || '';
@@ -523,15 +801,15 @@
                 if (type.toLowerCase().includes('basilica') || type.toLowerCase().includes('cathedral')) {
                     iconUrl = 'cathedral-icon.png';
                     iconSize = [30, 30];
-                    iconClass = 'cathedral-icon-green';
+                    iconClass = 'cathedral-icon-brown'; // Changed from green to brown
                 } else if (type.toLowerCase().includes('monument')) {
                     iconUrl = 'cathedral-icon.png';
                     iconSize = [25, 25];
-                    iconClass = 'cathedral-icon-green';
+                    iconClass = 'monument-icon'; // Brown-ish color
                 } else {
                     iconUrl = 'church-icon.png';
                     iconSize = [30, 30];
-                    iconClass = 'church-icon-white';
+                    iconClass = 'church-icon-blue'; // Changed from white to blue
                 }
                 
                 // Make Marian churches slightly larger
