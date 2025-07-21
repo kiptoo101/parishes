@@ -324,7 +324,7 @@
                 // Initialize Leaflet map
                 var map = L.map('map', {
                     zoomControl: false,
-                    maxZoom: 28,
+                    maxZoom: 18,  // Reduced from 28 to more reasonable level
                     minZoom: 2,
                     worldCopyJump: true
                 }).setView([0, 0], 2);
@@ -343,23 +343,12 @@
                     icon: 'fa fa-location-arrow'
                 }).addTo(map);
                 
-                // Add Mapbox layer
-                const mapboxAccessToken = 'pk.eyJ1Ijoia2lwdG9vMDEiLCJhIjoiY202cGlvdnRhMDRxZDJrc2JpbWprN25kaCJ9.YlAHNXzq6IJ8nfoHo0gjTQ';
-                
-                var baseLayer = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/{z}/{x}/{y}?access_token=' + mapboxAccessToken, {
-                    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                    opacity: 1,
-                    minZoom: 2,
-                    maxZoom: 28,
-                    tileSize: 512,
-                    zoomOffset: -1
+                // Add OpenStreetMap base layer (free alternative to Mapbox)
+                var baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 18,
+                    minZoom: 2
                 }).addTo(map);
-                
-                // Add blue tint to the tiles via CSS
-                const tilePane = document.querySelector('.leaflet-tile-pane');
-                if (tilePane) {
-                    tilePane.style.filter = 'hue-rotate(210deg) brightness(1.1) saturate(1.2)';
-                }
                 
                 // Initialize marker cluster group
                 var markers = L.markerClusterGroup({
