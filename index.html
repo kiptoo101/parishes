@@ -7,7 +7,7 @@
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
         
-        <!-- External CSS files - Using CDN instead of local files -->
+        <!-- External CSS files -->
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
@@ -15,9 +15,23 @@
         <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.79.0/dist/L.Control.Locate.min.css" />
         
-        <!-- Our custom styles -->
+        <!-- Custom CSS -->
         <style>
-            /* Updated icon colors */
+            /* Map container styling */
+            #map {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 100%;
+            }
+            
+            /* Hide the bounds control */
+            .leaflet-control-container .leaflet-top.leaflet-right,
+            .leaflet-control-container .leaflet-bottom.leaflet-right {
+                display: none !important;
+            }
+            
+            /* Icon color styling */
             .cathedral-icon-brown {
                 filter: hue-rotate(60deg) saturate(0.8) brightness(0.9);
             }
@@ -33,12 +47,6 @@
                 margin: 0;
                 padding: 0;
                 font-family: Arial, sans-serif;
-            }
-            #map {
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                width: 100%;
             }
             .panel {
                 position: absolute;
@@ -452,162 +460,31 @@
             <div id="loading-status">Loading data chunks...</div>
         </div>
         
-        <!-- Base Libraries - Using CDN instead of local files -->
+        <!-- Base Libraries -->
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
         <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.79.0/dist/L.Control.Locate.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/autolinker/3.15.0/Autolinker.min.js"></script>
         
-        <!-- Simple Panel Toggle Script -->
+        <!-- Map Initialization Script -->
         <script>
-            // Global toggle panel function
-            function togglePanel(contentId) {
-                console.log("Toggling panel:", contentId);
-                var content = document.getElementById(contentId);
-                if (!content) {
-                    console.error("Content element not found:", contentId);
-                    return;
-                }
-                
-                var toggleBtn = document.getElementById(contentId.split('-')[0] + '-toggle');
-                
-                if (content.classList.contains('collapsed')) {
-                    content.classList.remove('collapsed');
-                    content.style.display = 'block';
-                    if (toggleBtn) toggleBtn.textContent = '−';
-                    
-                    // Show parent panel if it's hidden
-                    const panelId = contentId.split('-')[0] + '-panel';
-                    const panel = document.getElementById(panelId) || document.getElementById(contentId.split('-')[0]);
-                    if (panel && (panel.style.display === 'none' || !panel.style.display)) {
-                        panel.style.display = 'block';
-                    }
-                } else {
-                    content.classList.add('collapsed');
-                    content.style.display = 'none';
-                    if (toggleBtn) toggleBtn.textContent = '+';
-                }
-            }
-            
-            // Show or hide panel
-            function togglePanelVisibility(panelId) {
-                var panel = document.getElementById(panelId);
-                if (!panel) return;
-                
-                if (panel.style.display === 'none' || !panel.style.display) {
-                    panel.style.display = 'block';
-                } else {
-                    panel.style.display = 'none';
-                }
-            }
-            
-            // Show church list panel and its content
-            function showChurchList() {
-                const panel = document.getElementById('church-list-panel');
-                if (panel) {
-                    panel.style.display = 'block';
-                    
-                    const content = document.getElementById('church-list-content');
-                    if (content) {
-                        content.classList.remove('collapsed');
-                        content.style.display = 'block';
-                        
-                        const toggleBtn = document.getElementById('church-list-toggle');
-                        if (toggleBtn) toggleBtn.textContent = '−';
-                    }
-                }
-            }
-            
-            // Initialize panel visibility for desktop
-            function initPanels() {
-                if (window.innerWidth >= 768) {
-                    // On desktop, show church list panel
-                    const churchPanel = document.getElementById('church-list-panel');
-                    if (churchPanel) churchPanel.style.display = 'block';
-                    
-                    // Show filter panel
-                    const filterPanel = document.getElementById('filter-panel');
-                    if (filterPanel) filterPanel.style.display = 'block';
-                    
-                    // Show legend panel
-                    const legendPanel = document.getElementById('legend');
-                    if (legendPanel) legendPanel.style.display = 'block';
-                }
-            }
-            
-            // Initialize click handlers
             document.addEventListener('DOMContentLoaded', function() {
-                // Mobile toggle for church list panel
-                const mobileToggleBtn = document.getElementById('mobile-toggle-list');
-                if (mobileToggleBtn) {
-                    mobileToggleBtn.addEventListener('click', function() {
-                        togglePanelVisibility('church-list-panel');
-                        
-                        if (document.getElementById('church-list-panel').style.display !== 'none') {
-                            this.textContent = 'Hide Churches List';
-                            
-                            // Show content too
-                            const content = document.getElementById('church-list-content');
-                            if (content && content.classList.contains('collapsed')) {
-                                togglePanel('church-list-content');
-                            }
-                        } else {
-                            this.textContent = 'Show Churches List';
-                        }
-                    });
-                }
-                
-                // Hide church list button (mobile)
-                const hideListBtn = document.getElementById('hide-church-list');
-                if (hideListBtn) {
-                    hideListBtn.addEventListener('click', function() {
-                        const panel = document.getElementById('church-list-panel');
-                        if (panel) panel.style.display = 'none';
-                        
-                        const toggleBtn = document.getElementById('mobile-toggle-list');
-                        if (toggleBtn) toggleBtn.textContent = 'Show Churches List';
-                    });
-                }
-                
-                // Initialize panel visibility
-                initPanels();
-                
-                // Make sure church list panel is shown on desktop
-                if (window.innerWidth >= 768) {
-                    setTimeout(showChurchList, 1000);
-                }
-            });
-            
-            // Listen for window resize
-            window.addEventListener('resize', function() {
-                if (window.innerWidth >= 768) {
-                    // Show church list panel on desktop
-                    showChurchList();
-                }
-            });
-        </script>
-        
-        <!-- Simple Direct Map Implementation Script -->
-        <script>
-            // Basic map implementation to ensure churches are displayed
-            document.addEventListener('DOMContentLoaded', function() {
-                // Initialize Leaflet map with bounds to prevent dragging past world limits
-                var southWest = L.latLng(-85, -180),
-                    northEast = L.latLng(85, 180);
-                var bounds = L.latLngBounds(southWest, northEast);
-                
+                // Initialize Leaflet map with invisible bounds
                 var map = L.map('map', {
                     zoomControl: false,
                     maxZoom: 18,
                     minZoom: 2,
-                    worldCopyJump: true,
-                    maxBounds: bounds,
+                    worldCopyJump: false,
+                    maxBounds: L.latLngBounds(L.latLng(-85, -180), L.latLng(85, 180)),
                     maxBoundsViscosity: 1.0
                 }).setView([20, 0], 2);
                 
-                // Make map global for other scripts to access
-                window.map = map;
+                // Add OpenStreetMap base layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    noWrap: true
+                }).addTo(map);
                 
                 // Add zoom control
                 L.control.zoom({
@@ -620,30 +497,18 @@
                     icon: 'fa fa-location-arrow'
                 }).addTo(map);
                 
-                // Add OpenStreetMap base layer (free alternative to Mapbox)
-                var baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                    maxZoom: 18,
-                    minZoom: 2,
-                    noWrap: true
-                }).addTo(map);
-                
                 // Initialize marker cluster group
                 var markers = L.markerClusterGroup({
                     showCoverageOnHover: false,
                     maxClusterRadius: 60,
                     spiderfyOnMaxZoom: true
                 });
-                
-                // Make markers global for other scripts
-                window.markers = markers;
-                
-                // Add markers to map
                 map.addLayer(markers);
                 
-                // Initialize autolinker
+                // Make map and markers globally accessible
+                window.map = map;
+                window.markers = markers;
                 window.autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
-                
                 // Add proper click handler for mobile quick actions button
                 const quickActionsBtn = document.getElementById('mobile-quick-actions');
                 if (quickActionsBtn) {
